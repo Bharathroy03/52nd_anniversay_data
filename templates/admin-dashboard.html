@@ -92,15 +92,24 @@
       </div>
     </aside>
     
+    <!-- Collapsible Sidebar Backdrop Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    
     <!-- Main Content Area -->
     <main class="main-content">
       
       <!-- Top Navbar -->
       <header class="top-navbar">
-        <button class="mobile-toggle" id="sidebarToggle">☰</button>
-        <div style="display: flex; flex-direction: column;">
-          <div class="navbar-title">Team Saddam Zone Activities Data Collection</div>
-          <div id="userRoleGreeting" style="font-size: 0.82rem; color: var(--text-muted); font-weight: 500; margin-top: 2px;">Logged in as: Loading...</div>
+        <div class="navbar-brand-wrapper">
+          <button class="mobile-toggle" id="sidebarToggle">☰</button>
+          {% if logos.primary %}
+          <img src="/static/images/{{ logos.primary }}" class="mobile-navbar-logo mobile-only" alt="Logo">
+          {% endif %}
+          <div style="display: flex; flex-direction: column;">
+            <div class="navbar-title desktop-title">Team Saddam Zone Activities Data Collection</div>
+            <div class="navbar-title mobile-title mobile-only">Team Saddam</div>
+            <div id="userRoleGreeting" style="font-size: 0.82rem; color: var(--text-muted); font-weight: 500; margin-top: 2px;">Logged in as: Loading...</div>
+          </div>
         </div>
         <div class="navbar-actions">
           <button id="exportExcelBtn" class="btn btn-excel">
@@ -151,7 +160,9 @@
               <button type="button" id="btnStoreFullView" class="view-toggle-btn">Full Analytical View</button>
             </div>
           </div>
-          <div class="table-container">
+          
+          <!-- Desktop Table View -->
+          <div class="table-container desktop-only">
             <table class="data-table simple-view" id="storeSummaryTable">
               <thead>
                 <tr>
@@ -174,6 +185,11 @@
                 </tr>
               </tbody>
             </table>
+          </div>
+
+          <!-- Mobile Cards View -->
+          <div class="store-summary-cards-grid mobile-only" id="storeSummaryCards" style="margin-top: 15px;">
+            <!-- Dynamically populated from JS -->
           </div>
         </section>
       </div>
@@ -305,7 +321,8 @@
           </div>
         </div>
         
-        <div class="table-container">
+        <!-- Desktop Table View -->
+        <div class="table-container desktop-only">
           <table class="data-table" id="submissionsTable">
             <thead>
               <tr>
@@ -329,6 +346,11 @@
               </tr>
             </tbody>
           </table>
+        </div>
+
+        <!-- Mobile Cards View -->
+        <div class="customer-cards-grid mobile-only" id="submissionsCards" style="margin-top: 15px;">
+          <!-- Dynamically populated from JS -->
         </div>
 
         <!-- Table Pagination -->

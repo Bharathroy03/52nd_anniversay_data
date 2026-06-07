@@ -128,6 +128,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Sidebar toggle (for mobile layout)
     const sidebar = document.getElementById("sidebar");
     const sidebarToggle = document.getElementById("sidebarToggle");
+    const sidebarOverlay = document.getElementById("sidebarOverlay");
     
     const tableBody = document.getElementById("submissionsTableBody");
     const pageSizeSelect = document.getElementById("pageSizeSelect");
@@ -196,23 +197,22 @@ document.addEventListener("DOMContentLoaded", () => {
     let pendingDeleteId = null;
     let pendingDeleteAll = false;
 
-    // Sidebar Mobile Drawer Toggle
-    if (sidebarToggle && sidebar) {
+    // Sidebar Mobile Drawer Toggle & Backdrop Overlay
+    if (sidebarToggle && sidebar && sidebarOverlay) {
       sidebarToggle.addEventListener("click", (e) => {
         e.stopPropagation();
         sidebar.classList.toggle("active");
+        sidebarOverlay.classList.toggle("active");
+      });
+      
+      sidebarOverlay.addEventListener("click", () => {
+        sidebar.classList.remove("active");
+        sidebarOverlay.classList.remove("active");
       });
       
       // Stop propagation inside the sidebar container to prevent closing it
       sidebar.addEventListener("click", (e) => {
         e.stopPropagation();
-      });
-      
-      // Close sidebar if user clicks main area on mobile
-      document.querySelector(".main-content").addEventListener("click", () => {
-        if (sidebar.classList.contains("active")) {
-          sidebar.classList.remove("active");
-        }
       });
     }
 
@@ -231,6 +231,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // Mobile layout: close sidebar on click
         if (sidebar && sidebar.classList.contains("active")) {
           sidebar.classList.remove("active");
+          if (sidebarOverlay) sidebarOverlay.classList.remove("active");
         }
       });
     });
@@ -549,6 +550,89 @@ document.addEventListener("DOMContentLoaded", () => {
         <td style="text-align: center; font-weight: 700; color: var(--color-danger);">${sumIssues}</td>
       `;
       storeSummaryBody.appendChild(totalTr);
+
+      // Populate mobile store summary cards
+      const storeCards = document.getElementById("storeSummaryCards");
+      if (storeCards) {
+        storeCards.innerHTML = "";
+        if (storeWiseData.length === 0) {
+          storeCards.innerHTML = `<div class="table-empty"><div class="icon">📭</div><div>No store data available.</div></div>`;
+        } else {
+          sorted.forEach(stats => {
+            const card = document.createElement("div");
+            card.className = "mobile-store-card";
+            card.innerHTML = `
+              <div class="mobile-card-header">
+                <strong>🏪 ${stats.store_name}</strong>
+              </div>
+              <div class="mobile-card-grid">
+                <div class="mobile-grid-item">
+                  <span class="item-label">Total Customers</span>
+                  <span class="item-value font-bold">${stats.total_customers}</span>
+                </div>
+                <div class="mobile-grid-item">
+                  <span class="item-label">Today's Customers</span>
+                  <span class="item-value text-accent font-bold">${stats.todays_customers}</span>
+                </div>
+                <div class="mobile-grid-item">
+                  <span class="item-label">Completed</span>
+                  <span class="item-value text-success font-bold">${stats.completed}</span>
+                </div>
+                <div class="mobile-grid-item">
+                  <span class="item-label">Pending</span>
+                  <span class="item-value text-warning font-bold">${stats.pending}</span>
+                </div>
+                <div class="mobile-grid-item">
+                  <span class="item-label">Not Interested</span>
+                  <span class="item-value text-muted">${stats.not_interested}</span>
+                </div>
+                <div class="mobile-grid-item">
+                  <span class="item-label">Issues</span>
+                  <span class="item-value text-danger font-bold">${stats.invitation_issues}</span>
+                </div>
+              </div>
+            `;
+            storeCards.appendChild(card);
+          });
+          
+          // Append Grand Total Card
+          const totalCard = document.createElement("div");
+          totalCard.className = "mobile-store-card total-card";
+          totalCard.style.borderLeft = "4px solid var(--primary)";
+          totalCard.innerHTML = `
+            <div class="mobile-card-header">
+              <strong>⭐ ${totalLabel}</strong>
+            </div>
+            <div class="mobile-card-grid">
+              <div class="mobile-grid-item">
+                <span class="item-label">Total Customers</span>
+                <span class="item-value text-primary font-bold">${sumTotal}</span>
+              </div>
+              <div class="mobile-grid-item">
+                <span class="item-label">Today's Customers</span>
+                <span class="item-value text-accent font-bold">${sumToday}</span>
+              </div>
+              <div class="mobile-grid-item">
+                <span class="item-label">Completed</span>
+                <span class="item-value text-success font-bold">${sumCompleted}</span>
+              </div>
+              <div class="mobile-grid-item">
+                <span class="item-label">Pending</span>
+                <span class="item-value text-warning font-bold">${sumPending}</span>
+              </div>
+              <div class="mobile-grid-item">
+                <span class="item-label">Not Interested</span>
+                <span class="item-value text-muted font-bold">${sumNotInterested}</span>
+              </div>
+              <div class="mobile-grid-item">
+                <span class="item-label">Issues</span>
+                <span class="item-value text-danger font-bold">${sumIssues}</span>
+              </div>
+            </div>
+          `;
+          storeCards.appendChild(totalCard);
+        }
+      }
     }
 
     // Compile Store-Wise summary grid from entries (fallback for existing charts)
@@ -799,6 +883,83 @@ document.addEventListener("DOMContentLoaded", () => {
 
         tableBody.appendChild(tr);
       });
+
+      // Populate mobile customer cards
+      const cardsContainer = document.getElementById("submissionsCards");
+      if (cardsContainer) {
+        cardsContainer.innerHTML = "";
+        if (paginatedData.length === 0) {
+          cardsContainer.innerHTML = `
+            <div class="table-empty">
+              <div class="icon">🔍</div>
+              <div>No submissions found matching the criteria.</div>
+            </div>
+          `;
+        } else {
+          paginatedData.forEach(sub => {
+            const card = document.createElement("div");
+            card.className = "mobile-customer-card";
+            
+            const dateStr = sub.created_at 
+              ? new Date(sub.created_at).toLocaleString() 
+              : "N/A";
+              
+            let regBadgeClass = "badge-not-interested";
+            if (sub.app_registration_status === "Completed") {
+              regBadgeClass = "badge-completed";
+            } else if (sub.app_registration_status === "Pending") {
+              regBadgeClass = "badge-pending";
+            }
+
+            const issueBadgeClass = sub.invitation_issue === "Yes" 
+              ? "badge-issue-yes" 
+              : "badge-issue-no";
+
+            const showActions = (currentUserRole !== 'admin_store_head');
+            
+            card.innerHTML = `
+              <div class="mobile-card-row store-row">
+                <span class="store-tag">🏪 ${sub.store_name}</span>
+                ${showActions ? `
+                  <div class="card-actions">
+                    <button class="card-action-btn card-action-edit" title="Edit">✏️</button>
+                    <button class="card-action-btn card-action-delete" title="Delete">🗑️</button>
+                  </div>
+                ` : ''}
+              </div>
+              <div class="mobile-card-row details-row">
+                <span class="customer-name">👤 ${sub.customer_name}</span>
+                <a href="tel:${sub.mobile_number}" class="customer-phone">📞 ${sub.mobile_number}</a>
+              </div>
+              <div class="mobile-card-row badges-row">
+                <span class="badge ${regBadgeClass}">App: ${sub.app_registration_status}</span>
+                <span class="badge ${issueBadgeClass}">Issue: ${sub.invitation_issue}</span>
+              </div>
+              ${sub.issue_description ? `
+                <div class="mobile-card-row desc-row">
+                  <span class="desc-label">Issue Detail:</span>
+                  <span class="desc-content">${sub.issue_description}</span>
+                </div>
+              ` : ''}
+              <div class="mobile-card-row footer-row">
+                <span class="submitted-date">Submitted: ${dateStr}</span>
+                <span class="sub-id">ID: #${sub.id}</span>
+              </div>
+            `;
+            
+            // Bind edit and delete actions
+            if (showActions) {
+              const editBtn = card.querySelector(".card-action-edit");
+              if (editBtn) editBtn.addEventListener("click", () => openEditModal(sub));
+              
+              const delBtn = card.querySelector(".card-action-delete");
+              if (delBtn) delBtn.addEventListener("click", () => openDeleteModal(sub.id, sub.customer_name));
+            }
+            
+            cardsContainer.appendChild(card);
+          });
+        }
+      }
 
       // Pagination indicators
       const startEntry = startIdx + 1;
@@ -1268,6 +1429,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // Mobile: close sidebar
         if (sidebar && sidebar.classList.contains("active")) {
           sidebar.classList.remove("active");
+          if (sidebarOverlay) sidebarOverlay.classList.remove("active");
         }
       });
     }
@@ -2183,18 +2345,21 @@ document.addEventListener("DOMContentLoaded", () => {
     const btnSimple = document.getElementById("btnStoreSimpleView");
     const btnFull = document.getElementById("btnStoreFullView");
     const storeTable = document.getElementById("storeSummaryTable");
+    const storeCards = document.getElementById("storeSummaryCards");
     
     if (btnSimple && btnFull && storeTable) {
       btnSimple.addEventListener("click", () => {
         btnSimple.classList.add("active");
         btnFull.classList.remove("active");
         storeTable.classList.add("simple-view");
+        if (storeCards) storeCards.classList.add("simple-view");
       });
       
       btnFull.addEventListener("click", () => {
         btnFull.classList.add("active");
         btnSimple.classList.remove("active");
         storeTable.classList.remove("simple-view");
+        if (storeCards) storeCards.classList.remove("simple-view");
       });
     }
 

@@ -2673,4 +2673,301 @@ body {
   }
 }
 
+/* ==================================================== */
+/* PROFESSIONAL MOBILE CRM & RESPONSIVE LAYOUT SYSTEM */
+/* ==================================================== */
+
+/* Helper visibility classes */
+.desktop-only {
+  display: block;
+}
+.mobile-only {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .desktop-only {
+    display: none !important;
+  }
+  .mobile-only {
+    display: block !important;
+  }
+
+  /* Admin Login Mobile Styles */
+  .login-bubbles, .bubble {
+    display: none !important;
+    animation: none !important;
+  }
+  
+  /* Public Form Header & Title Styling */
+  .logo-header {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 1000 !important;
+    background: rgba(17, 24, 39, 0.85) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    padding: 12px 20px !important;
+    margin: -15px -20px 20px -20px !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  }
+
+  .form-title-card h1 {
+    font-size: 1.35rem !important;
+    line-height: 1.4 !important;
+    word-break: break-word !important;
+  }
+
+  .public-form-body .flex-between {
+    flex-direction: column !important;
+    gap: 12px !important;
+    margin-bottom: 30px !important;
+  }
+
+  .public-form-body .flex-between .btn {
+    width: 100% !important;
+  }
+
+  .toast {
+    max-width: 90% !important;
+    font-size: 0.8rem !important;
+  }
+  
+  /* Sidebar Drawer Overlay */
+  .sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 99;
+    display: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  
+  .sidebar-overlay.active {
+    display: block !important;
+    opacity: 1 !important;
+  }
+
+  /* Mobile Store Summary Card Grid */
+  .store-summary-cards-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    width: 100%;
+  }
+
+  .mobile-store-card {
+    background: var(--surface);
+    border: 1px solid var(--surface-border);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.2s ease;
+  }
+  
+  .mobile-store-card.total-card {
+    border-left: 4px solid var(--primary);
+  }
+
+  .mobile-card-header {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-main);
+    border-bottom: 1.5px solid var(--surface-border);
+    padding-bottom: 10px;
+    margin-bottom: 12px;
+  }
+
+  .mobile-card-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .mobile-grid-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .item-label {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.2px;
+  }
+
+  .item-value {
+    font-size: 1.05rem;
+    color: var(--text-main);
+  }
+
+  /* Support Simple View on Store Summary Cards */
+  .store-summary-cards-grid.simple-view .mobile-store-card .mobile-grid-item:nth-child(n+2) {
+    display: none !important;
+  }
+
+  .store-summary-cards-grid.simple-view .mobile-store-card .mobile-card-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Mobile Customer Cards Grid */
+  .customer-cards-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    width: 100%;
+  }
+
+  .mobile-customer-card {
+    background: var(--surface);
+    border: 1px solid var(--surface-border);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .mobile-card-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .mobile-card-row.store-row {
+    border-bottom: 1.5px solid var(--surface-border);
+    padding-bottom: 10px;
+  }
+
+  .store-tag {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--primary);
+  }
+
+  .card-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .card-action-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--surface-border);
+    border-radius: var(--radius-sm);
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+  }
+  
+  .card-action-btn:hover {
+    background: rgba(0, 0, 0, 0.05);
+  }
+
+  .customer-name {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-main);
+  }
+
+  .customer-phone {
+    font-size: 0.9rem;
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 500;
+  }
+
+  .badges-row {
+    justify-content: flex-start !important;
+    gap: 10px;
+  }
+
+  .desc-row {
+    background: #f8fafc;
+    border-left: 3.5px solid var(--color-warning);
+    padding: 10px 12px;
+    border-radius: var(--radius-sm);
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 4px;
+  }
+
+  .desc-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #b45309; /* amber-700 */
+    text-transform: uppercase;
+  }
+
+  .desc-content {
+    font-size: 0.85rem;
+    color: #451a03; /* amber-950 */
+    line-height: 1.4;
+  }
+
+  .footer-row {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    border-top: 1px dashed var(--surface-border);
+    padding-top: 10px;
+  }
+
+  /* Modals to Bottom Sheets */
+  .modal-overlay {
+    align-items: flex-end !important;
+  }
+
+  .store-modal-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    border-radius: 20px 20px 0 0 !important;
+    padding: 20px 16px 30px 16px !important;
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    max-height: 80vh !important;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .modal-overlay.show .store-modal-card {
+    transform: translateY(0) !important;
+  }
+
+  .bottom-sheet-handle {
+    width: 40px;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+    margin: 0 auto 15px auto;
+    display: block !important;
+  }
+
+  .store-options-list {
+    max-height: 40vh !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+    flex: 1;
+  }
+
+  /* Ensure no horizontal scrolling */
+  html, body {
+    overflow-x: hidden !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+}
+
 
