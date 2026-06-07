@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login - Team Saddam Zone Activities Data Collection</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="login-body">
+
+  <!-- Animated Floating Background Bubbles -->
+  <div class="login-bubbles">
+    <div class="bubble"></div>
+    <div class="bubble"></div>
+    <div class="bubble"></div>
+    <div class="bubble"></div>
+    <div class="bubble"></div>
+  </div>
+
+  <div class="login-wrapper">
+    <!-- Accent Color Band -->
+    <div class="form-header-card"></div>
+    
+    <div class="card login-card" style="margin-bottom: 0;">
+      
+      <!-- Dynamic Logo Header -->
+      <div style="text-align: center; margin-bottom: 20px;">
+        {% if logos.primary %}
+        <img src="/static/images/{{ logos.primary }}" style="max-height: 60px; width: auto; object-fit: contain;" alt="Logo">
+        {% endif %}
+      </div>
+
+      <div class="login-logo" style="text-align: center; margin-bottom: 8px;">Admin Portal</div>
+      <p class="form-description" style="text-align: center; margin-bottom: 25px;">
+        Authenticate to access the Authority Panel analytical dashboard.
+      </p>
+      
+      <!-- General Login Error Notification -->
+      <div class="form-group" id="login-error-container" style="display: none; margin-bottom: 20px;">
+        <div class="badge badge-issue-yes" style="display: flex; padding: 12px 16px; border-radius: var(--radius-sm); font-size: 0.88rem; width: 100%; text-transform: none; text-align: center; justify-content: center; font-weight: 500;">
+          Invalid username or password. Please try again.
+        </div>
+      </div>
+      
+      <!-- Login Form -->
+      <form id="loginForm" novalidate>
+        
+        <!-- Username Input -->
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label class="form-label" for="username">Username</label>
+          <input type="text" class="form-control" id="username" name="username" placeholder="Enter username" required>
+          <div class="error-msg" id="username-error">Username is required.</div>
+        </div>
+        
+        <!-- Password Input with Toggle Visibility -->
+        <div class="form-group" style="margin-bottom: 30px;">
+          <label class="form-label" for="password">Password</label>
+          <div class="password-input-container">
+            <input type="password" class="form-control" id="password" name="password" placeholder="Enter password" required>
+            <span class="password-toggle-icon" id="passwordToggle">👁️</span>
+          </div>
+          <div class="error-msg" id="password-error">Password is required.</div>
+        </div>
+        
+        <!-- Submit Button with Spinner -->
+        <button type="submit" class="btn btn-primary btn-block" id="loginBtn">
+          <span class="login-spinner" id="loginSpinner" style="display: none;"></span>
+          <span id="loginBtnText">Login to Dashboard</span>
+        </button>
+        
+        <div style="text-align: center; margin-top: 20px;">
+          <a href="/" style="font-size: 0.9rem; color: #60a5fa; text-decoration: none; font-weight: 500;">← Back to Public Form</a>
+        </div>
+      </form>
+      
+    </div>
+  </div>
+
+  <!-- Reusable Sticky Footer -->
+  <footer class="site-footer">
+    <span class="site-footer-text">© All Rights Reserved by Bharath Kumar | Designed and Developed by Bharath Kumar</span>
+  </footer>
+
+  <script src="/static/js/admin.js"></script>
+</body>
+</html>

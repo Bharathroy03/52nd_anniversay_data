@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Team Saddam Zone Activities Data Collection</title>
+  <!-- Main Stylesheet -->
+  <link rel="stylesheet" href="/static/css/style.css?v=2.1">
+</head>
+<body class="public-form-body">
+
+  <!-- Animated Floating Background Bubbles -->
+  <div class="login-bubbles">
+    <div class="bubble"></div>
+    <div class="bubble"></div>
+    <div class="bubble"></div>
+    <div class="bubble"></div>
+    <div class="bubble"></div>
+  </div>
+
+  <div class="app-container">
+    
+    <!-- Dynamic Logo Header Area -->
+    <div class="logo-header">
+      {% if logos.anniversary %}
+      <img src="/static/images/{{ logos.anniversary }}" class="logo-anniversary" alt="Anniversary Logo">
+      {% endif %}
+      {% if logos.primary %}
+      <img src="/static/images/{{ logos.primary }}" class="logo-primary" alt="Store Logo">
+      {% endif %}
+    </div>
+
+    <!-- Accent Color Band -->
+    <div class="form-header-card"></div>
+    
+    <!-- Main Title Card -->
+    <div class="card form-title-card">
+      <div class="card-title-section">
+        <h1 style="font-size: 1.65rem;">Team Saddam Zone Activities Data Collection</h1>
+      </div>
+      <p class="form-description">
+        Please document customer feedback and registration details. All responses are logged securely in our central database.
+      </p>
+      <p class="required-notice">* Indicates required question</p>
+    </div>
+    
+    <!-- Form Starts -->
+    <form id="customerForm" novalidate>
+      
+      <!-- Section 1: Store Details -->
+      <div class="card" id="card-store">
+        <div class="card-title-section">
+          <div class="section-title">1. Store Details</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="store_id">Store Name <span class="required">*</span></label>
+          <div class="custom-select-trigger form-control" id="store_trigger" tabindex="0">
+            <span class="selected-text text-muted">Select a store</span>
+          </div>
+          <input type="hidden" id="store_id" name="store_id" required>
+          <div class="error-msg" id="store-error">Please select a valid store from the list.</div>
+        </div>
+      </div>
+      
+      <!-- Section 2: Customer Details -->
+      <div class="card" id="card-customer-details">
+        <div class="card-title-section">
+          <div class="section-title">2. Customer Details</div>
+        </div>
+        
+        <!-- Customer Name -->
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label class="form-label" for="customer_name">Customer Name <span class="required">*</span></label>
+          <input type="text" class="form-control" id="customer_name" name="customer_name" placeholder="Enter customer full name" required>
+          <div class="error-msg" id="name-error">Please enter the customer's name.</div>
+        </div>
+
+        <!-- Mobile Number -->
+        <div class="form-group">
+          <label class="form-label" for="mobile_number">Mobile Number <span class="required">*</span></label>
+          <input type="tel" class="form-control" id="mobile_number" name="mobile_number" placeholder="Enter 10-digit mobile number" maxlength="10" required>
+          <div class="error-msg" id="mobile-error">Please enter a valid 10-digit mobile number.</div>
+        </div>
+      </div>
+      
+      <!-- Section 3: App Registration Details -->
+      <div class="card" id="card-registration">
+        <div class="card-title-section">
+          <div class="section-title">3. App Registration Details</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="app_registration_status">App Registration Status <span class="required">*</span></label>
+          <select class="form-control" id="app_registration_status" name="app_registration_status" required>
+            <option value="" disabled selected>Choose registration status</option>
+            <option value="Completed">Completed</option>
+            <option value="Pending">Pending</option>
+            <option value="Not Interested">Not Interested</option>
+          </select>
+          <div class="error-msg" id="registration-error">Please select an app registration status.</div>
+        </div>
+      </div>
+      
+      <!-- Section 4: Invitation Card Details -->
+      <div class="card" id="card-issue-option">
+        <div class="card-title-section">
+          <div class="section-title">4. Invitation Card Details</div>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label" for="invitation_card_issue">Invitation Card Issues? <span class="required">*</span></label>
+          <select class="form-control" id="invitation_card_issue" name="invitation_card_issue" required>
+            <option value="" disabled selected>Choose option</option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+          <div class="error-msg" id="issue-option-error">Please select if there is an invitation card issue.</div>
+        </div>
+        
+        <!-- Conditional Issue Description Sub-field (appears when Yes is selected) -->
+        <div class="conditional-field" id="issue-description-container">
+          <div class="form-group">
+            <label class="form-label" for="issue_description">Issue Description <span class="required">*</span></label>
+            <textarea class="form-control" id="issue_description" name="issue_description" placeholder="Describe the issue with the invitation card in detail..."></textarea>
+            <div class="error-msg" id="issue-desc-error">Please describe the issue in detail.</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Submit Action Controls -->
+      <div class="flex-between" style="margin-bottom: 50px;">
+        <button type="submit" class="btn btn-primary" id="submitBtn">Submit Response</button>
+        <button type="reset" class="btn btn-secondary" id="clearBtn">Clear form</button>
+      </div>
+      
+    </form>
+  </div>
+  
+  <!-- Success Confirmation Modal -->
+  <div class="modal-overlay" id="successModal">
+    <div class="modal-card">
+      <div class="modal-icon-success">
+        <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+          <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
+          <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+        </svg>
+      </div>
+      <h2>Response Submitted!</h2>
+      <p>Your feedback details have been successfully recorded in the database.</p>
+      <button class="btn btn-primary btn-block" id="modalCloseBtn">Submit Another Response</button>
+    </div>
+  </div>
+
+  <!-- Success Message Toast Notification (Fallback) -->
+  <div class="toast" id="successToast">
+    <div class="icon">✓</div>
+    <span>Your response has been recorded.</span>
+  </div>
+
+  <!-- Store Selection Modal -->
+  <div class="modal-overlay" id="storeSelectModal">
+    <div class="modal-card store-modal-card">
+      <div class="store-modal-header">
+        <h2>Select a Store</h2>
+        <button type="button" class="store-modal-close" id="storeModalCloseBtn">&times;</button>
+      </div>
+      <div class="store-search-wrapper">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="storeSearchInput" class="form-control store-search-input" placeholder="Search store by name...">
+      </div>
+      <div class="store-options-list" id="storeOptionsList">
+        <div class="store-loading">Loading stores...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reusable Sticky Footer -->
+  <footer class="site-footer">
+    <span class="site-footer-text">© All Rights Reserved by Bharath Kumar | Designed and Developed by Bharath Kumar</span>
+  </footer>
+
+  <!-- JavaScript Logic -->
+  <script src="/static/js/form.js?v=2.1"></script>
+</body>
+</html>

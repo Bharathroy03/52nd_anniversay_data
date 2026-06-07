@@ -18,7 +18,7 @@ def get_supabase() -> Client:
     if not url or not key:
         raise RuntimeError(
             "Supabase credentials are missing. Please verify that "
-            "SUPABASE_URL and SUPABASE_KEY are defined in backend/.env"
+            "SUPABASE_URL and SUPABASE_KEY are defined in the root .env file."
         )
         
     try:
