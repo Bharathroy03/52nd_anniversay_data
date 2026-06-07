@@ -23,21 +23,20 @@
       
       <div class="zone-head-info">
         <div class="info-label" style="margin-bottom: 6px;">Authority Panel</div>
-        
         <div style="margin-top: 8px;">
-          <div class="info-label" style="font-size: 0.75rem; color: #60a5fa; text-transform: uppercase;">Super Admin</div>
-          <div class="info-name" style="font-size: 0.85rem; font-weight: 500;">Bharath Kumar (22913)</div>
-        </div>
-        
-        <div style="margin-top: 10px; border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 8px;">
-          <div class="info-label" style="font-size: 0.75rem; color: #f97316; text-transform: uppercase;">Admin & Store Head</div>
-          <div class="info-name" style="font-size: 0.85rem; font-weight: 500;">Saddam Husain (6172)</div>
+          <div class="info-label" id="sideUserRoleLabel" style="font-size: 0.75rem; color: {% if session.get('role') == 'super_admin' %}#60a5fa{% else %}#f97316{% endif %}; text-transform: uppercase;">
+            {% if session.get('role') == 'super_admin' %}Super Admin{% else %}Admin & Store Head{% endif %}
+          </div>
+          <div class="info-name" id="sideUserName" style="font-size: 0.85rem; font-weight: 500;">
+            {{ session.get('full_name', 'Loading User...') }}
+          </div>
         </div>
       </div>
       
       <nav class="sidebar-nav">
+        {% if session.get('role') == 'super_admin' %}
         <a href="#overview-section" class="nav-item active" id="nav-overview">
-          <span class="nav-icon">📊</span> Overview
+          <span class="nav-icon">📊</span> Dashboard
         </a>
         <a href="#charts-section" class="nav-item" id="nav-charts">
           <span class="nav-icon">📈</span> Analytics
@@ -48,12 +47,38 @@
         <a href="#logs-section" class="nav-item" id="nav-logs">
           <span class="nav-icon">📋</span> Customer Logs
         </a>
+        <a href="#user-mgmt-section" class="nav-item" id="nav-user-mgmt">
+          <span class="nav-icon">👥</span> User Management
+        </a>
         <a href="#" class="nav-item" id="nav-data-mgmt">
           <span class="nav-icon">🗂️</span> Data Management
+        </a>
+        <a href="#export-center-section" class="nav-item" id="nav-export-center">
+          <span class="nav-icon">📤</span> Export Center
         </a>
         <a href="#" class="nav-item" id="nav-settings">
           <span class="nav-icon">⚙️</span> System Settings
         </a>
+        <a href="#role-mgmt-section" class="nav-item" id="nav-role-mgmt">
+          <span class="nav-icon">🔑</span> Role Management
+        </a>
+        {% else %}
+        <a href="#overview-section" class="nav-item active" id="nav-overview">
+          <span class="nav-icon">📊</span> Dashboard
+        </a>
+        <a href="#charts-section" class="nav-item" id="nav-charts">
+          <span class="nav-icon">📈</span> Analytics
+        </a>
+        <a href="#stores-section" class="nav-item" id="nav-stores">
+          <span class="nav-icon">🏪</span> Store Summary
+        </a>
+        <a href="#logs-section" class="nav-item" id="nav-logs">
+          <span class="nav-icon">📋</span> Customer Logs
+        </a>
+        <a href="#printable-reports-section" class="nav-item" id="nav-printable-reports">
+          <span class="nav-icon">🖨️</span> Printable Reports
+        </a>
+        {% endif %}
         <a href="/" class="nav-item" target="_blank" style="margin-top: 10px; border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 10px;">
           <span class="nav-icon">📝</span> Public Form
         </a>
@@ -304,6 +329,7 @@
         </div>
       </section>
 
+      {% if session.get('role') == 'super_admin' %}
       <!-- Edit Customer Modal -->
       <div class="edit-modal-overlay" id="editModalOverlay" style="display: none;">
         <div class="edit-modal-card">
@@ -522,6 +548,333 @@
           </div>
         </div>
       </div>
+      {% endif %}
+
+      <!-- Custom System Styles for Printable Reports -->
+      <style>
+        @media print {
+          body * {
+            visibility: hidden;
+          }
+          #printReportArea, #printReportArea * {
+            visibility: visible;
+          }
+          #printReportArea {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            border: none !important;
+            padding: 0 !important;
+            margin: 0 !important;
+          }
+        }
+        .status-switch {
+          position: relative;
+          display: inline-block;
+          width: 38px;
+          height: 20px;
+        }
+        .status-switch input {
+          opacity: 0;
+          width: 0;
+          height: 0;
+        }
+        .status-slider {
+          position: absolute;
+          cursor: pointer;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background-color: #ccc;
+          transition: .4s;
+          border-radius: 20px;
+        }
+        .status-slider:before {
+          position: absolute;
+          content: "";
+          height: 14px;
+          width: 14px;
+          left: 3px;
+          bottom: 3px;
+          background-color: white;
+          transition: .4s;
+          border-radius: 50%;
+        }
+        input:checked + .status-slider {
+          background-color: var(--color-success);
+        }
+        input:checked + .status-slider:before {
+          transform: translateX(18px);
+        }
+      </style>
+
+      <!-- User Account Management Section (Super Admin Only) -->
+      {% if session.get('role') == 'super_admin' %}
+      <section class="card" id="user-mgmt-section" style="display: none; padding: 20px;">
+        <div class="table-section-title">
+          <span>👥 User Account Management</span>
+          <button id="addUserBtn" class="btn btn-primary" style="padding: 6px 14px; font-size: 0.82rem;">➕ Add User</button>
+        </div>
+        
+        <!-- User Search & Filters -->
+        <div class="filter-card" style="margin-top: 15px; margin-bottom: 15px; background: rgba(255,255,255,0.02); border-color: rgba(255,255,255,0.05); padding: 15px;">
+          <div class="filter-grid" style="grid-template-columns: 2fr 1fr 1fr;">
+            <div class="filter-group">
+              <label class="filter-label">Search Users</label>
+              <input type="text" id="userSearchInput" class="form-control" placeholder="Search by name, ID, or username...">
+            </div>
+            <div class="filter-group">
+              <label class="filter-label">Filter Role</label>
+              <select id="userRoleFilter" class="form-control">
+                <option value="">All Roles</option>
+                <option value="super_admin">Super Admin</option>
+                <option value="admin_store_head">Admin & Store Head</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label class="filter-label">Filter Status</label>
+              <select id="userStatusFilter" class="form-control">
+                <option value="">All Statuses</option>
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <table class="data-table" id="usersTable">
+            <thead>
+              <tr>
+                <th>Employee ID</th>
+                <th>Full Name</th>
+                <th>Username</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th>Created Date</th>
+                <th style="text-align: center;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="usersTableBody">
+              <tr>
+                <td colspan="7" class="table-empty">
+                  <div class="icon">⌛</div>
+                  <div>Loading users...</div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        
+        <!-- Users Pagination -->
+        <div class="pagination-container">
+          <span id="userPaginationInfo">Showing 0-0 of 0 users</span>
+          <div class="pagination-actions">
+            <button id="userPrevPageBtn" class="pagination-btn" disabled>← Previous</button>
+            <button id="userNextPageBtn" class="pagination-btn" disabled>Next →</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Add / Edit User Modal -->
+      <div class="edit-modal-overlay" id="userModalOverlay" style="display: none;">
+        <div class="edit-modal-card">
+          <div class="edit-modal-header">
+            <h3 id="userModalTitle">➕ Add User Account</h3>
+            <button class="edit-modal-close" id="userModalClose">&times;</button>
+          </div>
+          <form id="userForm" class="edit-modal-body">
+            <input type="hidden" id="userFormId">
+            
+            <div class="edit-form-group" id="empIdGroup">
+              <label class="filter-label">Employee ID <span style="color:var(--color-danger)">*</span></label>
+              <input type="text" class="form-control" id="userEmpId" placeholder="e.g. 22913" required>
+            </div>
+            <div class="edit-form-group">
+              <label class="filter-label">Full Name <span style="color:var(--color-danger)">*</span></label>
+              <input type="text" class="form-control" id="userFullName" placeholder="e.g. Bharath Kumar" required>
+            </div>
+            <div class="edit-form-group">
+              <label class="filter-label">Username <span style="color:var(--color-danger)">*</span></label>
+              <input type="text" class="form-control" id="userUsername" placeholder="e.g. bharath" required>
+            </div>
+            <div class="edit-form-group">
+              <label class="filter-label">Password <span id="userPassRequired" style="color:var(--color-danger)">*</span></label>
+              <input type="password" class="form-control" id="userPassword" placeholder="Enter password">
+              <small id="userPassHelp" class="text-muted" style="display:none; font-size: 0.78rem; margin-top: 4px; color: #94a3b8;">Leave blank to keep current password.</small>
+            </div>
+            <div class="edit-form-group">
+              <label class="filter-label">Role <span style="color:var(--color-danger)">*</span></label>
+              <select class="form-control" id="userRole" required>
+                <option value="super_admin">Super Admin</option>
+                <option value="admin_store_head">Admin & Store Head</option>
+              </select>
+            </div>
+            <div class="edit-form-group">
+              <label class="filter-label">Status <span style="color:var(--color-danger)">*</span></label>
+              <select class="form-control" id="userStatus" required>
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
+              </select>
+            </div>
+            <div class="edit-modal-actions">
+              <button type="button" class="btn btn-secondary" id="userCancelBtn">Cancel</button>
+              <button type="submit" class="btn btn-primary" id="userSaveBtn">💾 Save User</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Delete User Confirmation Modal -->
+      <div class="edit-modal-overlay" id="userDeleteModalOverlay" style="display: none;">
+        <div class="edit-modal-card" style="max-width: 420px;">
+          <div class="edit-modal-header" style="border-bottom-color: var(--color-danger-bg);">
+            <h3 style="color: var(--color-danger);">⚠️ Confirm Delete User</h3>
+            <button class="edit-modal-close" id="userDeleteModalClose">&times;</button>
+          </div>
+          <div class="edit-modal-body" style="text-align: center; padding: 24px 20px;">
+            <p id="userDeleteModalMessage" style="font-size: 0.95rem; margin-bottom: 20px; color: var(--text-main);">Are you sure you want to delete this user?</p>
+            <div class="edit-modal-actions" style="justify-content: center;">
+              <button type="button" class="btn btn-secondary" id="userDeleteCancelBtn">Cancel</button>
+              <button type="button" class="btn btn-danger" id="userDeleteConfirmBtn">🗑️ Delete User</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Export Center Section (Super Admin Only) -->
+      <section class="card" id="export-center-section" style="display: none; padding: 20px;">
+        <div class="table-section-title">
+          <span>📤 Bulk Data Export Center</span>
+        </div>
+        <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 20px;">
+          Configure filters below and export the collected customer entries database to Microsoft Excel or CSV format.
+        </p>
+        <div class="filter-card" style="margin-bottom: 25px;">
+          <div class="filter-grid" style="grid-template-columns: repeat(2, 1fr); gap: 20px;">
+            <div class="filter-group">
+              <label class="filter-label">Export Format</label>
+              <div style="display: flex; gap: 15px; margin-top: 10px;">
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                  <input type="radio" name="exportFormatRadio" value="excel" checked style="width: auto;"> Excel (.xlsx)
+                </label>
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                  <input type="radio" name="exportFormatRadio" value="csv" style="width: auto;"> CSV (.csv)
+                </label>
+              </div>
+            </div>
+            <div class="filter-group" style="justify-content: flex-end; align-items: flex-end;">
+              <button id="exportCenterExecuteBtn" class="btn btn-excel btn-block" style="max-width: 250px;">
+                📥 Generate & Download
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Role Management Section (Super Admin Only) -->
+      <section class="card" id="role-mgmt-section" style="display: none; padding: 20px;">
+        <div class="table-section-title">
+          <span>🔑 Role-Based Access Control Authority Structure</span>
+        </div>
+        <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 25px;">
+          System architecture hierarchy rules and active active administration audit logs.
+        </p>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 25px;">
+          <div style="border: 1px solid var(--surface-border); padding: 15px; border-radius: var(--radius-sm); background: rgba(255,255,255,0.01);">
+            <h4 style="color: #60a5fa; margin-bottom: 10px;">👑 Super Admin Privileges</h4>
+            <p style="font-size: 0.85rem; line-height: 1.6; color: #e5e7eb;">
+              Full privileges. Can manage users, adjust settings, review system logs, perform bulk data operations, and audit store data.
+            </p>
+          </div>
+          <div style="border: 1px solid var(--surface-border); padding: 15px; border-radius: var(--radius-sm); background: rgba(255,255,255,0.01);">
+            <h4 style="color: #f97316; margin-bottom: 10px;">👤 Admin & Store Head Privileges</h4>
+            <p style="font-size: 0.85rem; line-height: 1.6; color: #e5e7eb;">
+              Operational access only. Can view statistics, look up customer activity logs, check branch performance summary, and run printable reports. Cannot edit, export, or delete any records.
+            </p>
+          </div>
+        </div>
+        
+        <div>
+          <h4 style="margin-bottom: 10px;">📜 Active Administration Audit Logs</h4>
+          <div class="table-container" style="max-height: 300px; overflow-y: auto;">
+            <table class="data-table" id="adminAuditLogsTable">
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Action</th>
+                  <th>Date</th>
+                  <th>Time</th>
+                  <th>IP Address</th>
+                </tr>
+              </thead>
+              <tbody id="adminAuditLogsBody">
+                <tr>
+                  <td colspan="5" class="table-empty">
+                    <div class="icon">📜</div>
+                    <div>Loading audit logs...</div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+      {% endif %}
+
+      <!-- Printable Reports Section -->
+      <section class="card" id="printable-reports-section" style="display: none; padding: 25px;">
+        <div class="table-section-title">
+          <span>🖨️ Printable Summary Reports</span>
+          <button id="printReportBtn" class="btn btn-excel">🖨️ Print Report</button>
+        </div>
+        
+        <div id="printReportArea" style="padding: 20px; background: white; color: black; border-radius: var(--radius-md); margin-top: 15px; border: 1px solid #cbd5e1; font-family: sans-serif;">
+          <div style="text-align: center; margin-bottom: 20px; border-bottom: 2px solid #333; padding-bottom: 15px;">
+            <h2 style="margin: 0; color: #1e3a8a;">Team Saddam Zone Activities</h2>
+            <p style="margin: 5px 0 0; font-size: 0.9rem; color: #555;">Anniversary Data Collection Report | Generated: <span id="reportGeneratedDate">N/A</span></p>
+          </div>
+          
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 25px;">
+            <div style="border: 1px solid #ddd; padding: 12px; border-radius: 6px; text-align: center; background: #f8fafc;">
+              <div style="font-size: 0.8rem; color: #666; text-transform: uppercase; font-weight: 600;">Total Customers</div>
+              <div id="reportTotalSubmissions" style="font-size: 1.8rem; font-weight: 700; color: #1e3a8a; margin-top: 5px;">0</div>
+            </div>
+            <div style="border: 1px solid #ddd; padding: 12px; border-radius: 6px; text-align: center; background: #f8fafc;">
+              <div style="font-size: 0.8rem; color: #666; text-transform: uppercase; font-weight: 600;">Completed Apps</div>
+              <div id="reportCompletedApps" style="font-size: 1.8rem; font-weight: 700; color: #16a34a; margin-top: 5px;">0</div>
+            </div>
+            <div style="border: 1px solid #ddd; padding: 12px; border-radius: 6px; text-align: center; background: #f8fafc;">
+              <div style="font-size: 0.8rem; color: #666; text-transform: uppercase; font-weight: 600;">Invitation Issues</div>
+              <div id="reportIssuesCount" style="font-size: 1.8rem; font-weight: 700; color: #dc2626; margin-top: 5px;">0</div>
+            </div>
+          </div>
+
+          <div>
+            <h3 style="border-bottom: 1px solid #ddd; padding-bottom: 8px; margin-top: 0; color: #1e3a8a; font-size: 1.15rem; font-weight: 600;">Store Performance Summary</h3>
+            <table style="width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.85rem;">
+              <thead>
+                <tr style="background: #f1f5f9; text-align: left; color: #333;">
+                  <th style="padding: 8px; border: 1px solid #cbd5e1;">Store Name</th>
+                  <th style="padding: 8px; border: 1px solid #cbd5e1; text-align: center;">Completed</th>
+                  <th style="padding: 8px; border: 1px solid #cbd5e1; text-align: center;">Pending</th>
+                  <th style="padding: 8px; border: 1px solid #cbd5e1; text-align: center;">Not Interested</th>
+                  <th style="padding: 8px; border: 1px solid #cbd5e1; text-align: center;">Issues</th>
+                  <th style="padding: 8px; border: 1px solid #cbd5e1; text-align: center;">Total</th>
+                </tr>
+              </thead>
+              <tbody id="reportStoresBody" style="color: #333;">
+                <tr>
+                  <td colspan="6" style="text-align: center; padding: 15px; color: #666;">No data loaded.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
 
       <!-- Toast Notification -->
       <div class="toast-container" id="toastContainer"></div>

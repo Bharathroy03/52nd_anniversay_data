@@ -84,6 +84,50 @@ def seed_database_if_empty():
 # Run seed check
 seed_database_if_empty()
 
+def seed_users_if_empty():
+    """
+    Self-healing helper: checks if the users table is empty,
+    and automatically seeds the default Super Admin and Admin & Store Head.
+    """
+    try:
+        from werkzeug.security import generate_password_hash
+        supabase = get_supabase()
+        response = supabase.table('users').select('id').limit(1).execute()
+        if not response.data:
+            print("[INFO] Users table is empty. Auto-seeding default authority users...")
+            
+            # Retrieve default passwords from Config or environment
+            admin_pass = Config.ADMIN_PASSWORD
+            saddam_pass = Config.SADDAM_PASSWORD
+            
+            users_to_seed = [
+                {
+                    "employee_id": "22913",
+                    "full_name": "Bharath Kumar (22913)",
+                    "username": "bharath",
+                    "password_hash": generate_password_hash(admin_pass),
+                    "role": "super_admin",
+                    "status": "Active"
+                },
+                {
+                    "employee_id": "6172",
+                    "full_name": "Saddam Husain (6172)",
+                    "username": "saddam",
+                    "password_hash": generate_password_hash(saddam_pass),
+                    "role": "admin_store_head",
+                    "status": "Active"
+                }
+            ]
+            supabase.table('users').insert(users_to_seed).execute()
+            print("[INFO] Database successfully seeded with default users.")
+        else:
+            print("[INFO] Users table already has entries. Skipping seeder.")
+    except Exception as e:
+        print(f"[WARNING] Users database auto-seeding skipped: {e}")
+
+# Run users seed check
+seed_users_if_empty()
+
 # ----------------------------------------------------
 # Flask App Initialization
 # ----------------------------------------------------
@@ -233,7 +277,7 @@ def log_delete_action(delete_type, records_deleted, details=''):
     """Logs a delete action to the delete_logs audit table. Silently catches errors."""
     try:
         role = session.get('role', 'unknown')
-        user_name = "Bharath Kumar (22913)" if role == 'super_admin' else "Saddam Husain (6172)"
+        user_name = session.get('full_name', 'Unknown User')
         supabase = get_supabase()
         supabase.table('delete_logs').insert({
             "user_name": user_name,
@@ -244,6 +288,26 @@ def log_delete_action(delete_type, records_deleted, details=''):
         }).execute()
     except Exception as e:
         app.logger.warning(f"Delete audit log failed (non-blocking): {e}")
+
+def log_audit_action(user_name, action):
+    """Logs an action to the audit_logs table. Silently catches errors."""
+    try:
+        supabase = get_supabase()
+        ip_addr = request.remote_addr or '127.0.0.1'
+        # Get date and time in local timezone/server time
+        now = datetime.datetime.now()
+        log_date = now.strftime('%Y-%m-%d')
+        log_time = now.strftime('%H:%M:%S')
+        
+        supabase.table('audit_logs').insert({
+            "user_name": user_name,
+            "action": action,
+            "log_date": log_date,
+            "log_time": log_time,
+            "ip_address": ip_addr
+        }).execute()
+    except Exception as e:
+        app.logger.warning(f"Audit log failed (non-blocking): {e}")
 
 # ----------------------------------------------------
 # HTML Template Serving Routes
@@ -369,21 +433,29 @@ def api_admin_login():
         if not username or not password:
             return jsonify({"success": False, "message": "Both username and password are required."}), 400
             
-        if (username == 'bharath' or username == Config.ADMIN_USERNAME) and password == Config.ADMIN_PASSWORD:
-            # Set Session credentials for Super Admin
-            session.clear()
-            session['logged_in'] = True
-            session['role'] = 'super_admin'
-            session.permanent = True
-            return jsonify({"success": True, "message": "Login successful!"})
-        elif (username == 'saddam' or username == Config.SADDAM_USERNAME) and password == Config.SADDAM_PASSWORD:
-            # Set Session credentials for Admin & Store Head
-            session.clear()
-            session['logged_in'] = True
-            session['role'] = 'admin_store_head'
-            session.permanent = True
-            return jsonify({"success": True, "message": "Login successful!"})
-            
+        supabase = get_supabase()
+        response = supabase.table('users').select('*').eq('username', username.lower().strip()).execute()
+        
+        if response.data:
+            user = response.data[0]
+            from werkzeug.security import check_password_hash
+            if check_password_hash(user.get('password_hash'), password):
+                if user.get('status') != 'Active':
+                    return jsonify({"success": False, "message": "This account is inactive. Please contact system administrator."}), 403
+                    
+                session.clear()
+                session['logged_in'] = True
+                session['user_id'] = user.get('id')
+                session['username'] = user.get('username')
+                session['role'] = user.get('role')
+                session['full_name'] = user.get('full_name')
+                session['employee_id'] = user.get('employee_id')
+                session.permanent = True
+                
+                log_audit_action(user.get('full_name'), "User Logged In")
+                
+                return jsonify({"success": True, "message": "Login successful!"})
+                
         return jsonify({"success": False, "message": "Invalid username or password."}), 401
     except Exception as e:
         app.logger.error(f"Login failed: {e}")
@@ -393,6 +465,8 @@ def api_admin_login():
 def api_admin_logout():
     """Clears admin session parameters."""
     try:
+        full_name = session.get('full_name', 'Unknown User')
+        log_audit_action(full_name, "User Logged Out")
         session.clear()
         return jsonify({"success": True, "message": "Successfully logged out."})
     except Exception as e:
@@ -450,7 +524,7 @@ def api_admin_dashboard():
         }
         
         user_role = session.get('role')
-        user_name = "Bharath Kumar (22913)" if user_role == 'super_admin' else "Saddam Husain (6172)"
+        user_name = session.get('full_name', 'Unknown User')
         
         return jsonify({
             "success": True, 
@@ -653,7 +727,7 @@ def api_admin_stats():
         return jsonify({"success": False, "message": "Failed to compile stats."}), 500
 
 @app.route('/api/admin/customer/<int:customer_id>', methods=['PUT'])
-@admin_required
+@super_admin_required
 def api_update_customer(customer_id):
     """Updates a customer entry. Resilient to missing updated_at column."""
     try:
@@ -710,7 +784,7 @@ def api_update_customer(customer_id):
         return jsonify({"success": False, "message": f"Update failed: {str(e)}"}), 500
 
 @app.route('/api/admin/customer/<int:customer_id>', methods=['DELETE'])
-@admin_required
+@super_admin_required
 def api_delete_customer(customer_id):
     """Deletes a specific customer entry. Available to both roles."""
     try:
@@ -738,7 +812,7 @@ def api_delete_customer(customer_id):
 # ----------------------------------------------------
 
 @app.route('/api/admin/delete/preview', methods=['GET'])
-@admin_required
+@super_admin_required
 def api_delete_preview():
     """Preview: counts records matching the given filter parameters before deletion."""
     try:
@@ -989,7 +1063,7 @@ def api_delete_all():
         return jsonify({"success": False, "message": f"Bulk delete failed: {str(e)}"}), 500
 
 @app.route('/api/admin/delete/logs', methods=['GET'])
-@admin_required
+@super_admin_required
 def api_delete_logs():
     """Fetch recent delete audit logs."""
     try:
@@ -1029,10 +1103,9 @@ def api_delete_all_customers_legacy():
 
 
 @app.route('/api/admin/export', methods=['GET'])
+@super_admin_required
 def api_admin_export():
     """Generates and streams a CSV of filtered customer entries."""
-    if not session.get('logged_in') or session.get('role') not in ['super_admin', 'admin_store_head']:
-        return "Unauthorized Access. Please log in.", 401
         
     try:
         store_id = request.args.get('store_id')
@@ -1107,10 +1180,9 @@ def api_admin_export():
         return "Internal server error generating CSV export.", 500
 
 @app.route('/api/admin/export-excel', methods=['GET'])
+@super_admin_required
 def api_admin_export_excel():
     """Generates and streams an Excel workbook with multiple worksheets and premium formatting."""
-    if not session.get('logged_in') or session.get('role') not in ['super_admin', 'admin_store_head']:
-        return "Unauthorized Access. Please log in.", 401
         
     try:
         store_id = request.args.get('store_id')
@@ -1382,6 +1454,270 @@ def api_admin_export_excel():
     except Exception as e:
         app.logger.error(f"Excel export failed: {e}")
         return "Internal server error generating Excel export.", 500
+
+# ----------------------------------------------------
+# Super Admin User Management API Suite
+# ----------------------------------------------------
+
+@app.route('/api/users', methods=['POST'])
+@super_admin_required
+def api_create_user():
+    """Create a new user. Super Admin only."""
+    try:
+        data = request.json or {}
+        full_name = data.get('full_name')
+        employee_id = data.get('employee_id')
+        username = data.get('username')
+        password = data.get('password')
+        role = data.get('role')
+        status = data.get('status', 'Active')
+        
+        if not all([full_name, employee_id, username, password, role]):
+            return jsonify({"success": False, "message": "All fields are required."}), 400
+            
+        if role not in ['super_admin', 'admin_store_head']:
+            return jsonify({"success": False, "message": "Invalid role specified."}), 400
+            
+        if status not in ['Active', 'Inactive']:
+            return jsonify({"success": False, "message": "Invalid status specified."}), 400
+            
+        from werkzeug.security import generate_password_hash
+        
+        supabase = get_supabase()
+        
+        # Check if username or employee_id already exists
+        check_username = supabase.table('users').select('id').eq('username', username.lower().strip()).execute()
+        if check_username.data:
+            return jsonify({"success": False, "message": "Username already exists."}), 400
+            
+        check_emp = supabase.table('users').select('id').eq('employee_id', employee_id.strip()).execute()
+        if check_emp.data:
+            return jsonify({"success": False, "message": "Employee ID already exists."}), 400
+            
+        db_payload = {
+            "full_name": str(full_name).strip(),
+            "employee_id": str(employee_id).strip(),
+            "username": str(username).strip().lower(),
+            "password_hash": generate_password_hash(password),
+            "role": role,
+            "status": status
+        }
+        
+        response = supabase.table('users').insert(db_payload).execute()
+        if not response.data:
+            return jsonify({"success": False, "message": "Failed to create user."}), 500
+            
+        admin_name = session.get('full_name', 'Super Admin')
+        log_audit_action(admin_name, f"Created User: {full_name} ({employee_id})")
+        
+        return jsonify({"success": True, "message": "User created successfully!", "data": response.data[0]})
+    except Exception as e:
+        app.logger.error(f"Create user failed: {e}")
+        return jsonify({"success": False, "message": f"Failed to create user: {str(e)}"}), 500
+
+
+@app.route('/api/users', methods=['GET'])
+@super_admin_required
+def api_get_users():
+    """Get all users, supports search, filter, and pagination. Super Admin only."""
+    try:
+        search = request.args.get('search')
+        role = request.args.get('role')
+        status = request.args.get('status')
+        page = int(request.args.get('page', 1))
+        page_size = int(request.args.get('page_size', 10))
+        
+        supabase = get_supabase()
+        query = supabase.table('users').select('*')
+        
+        # Apply filters
+        if role and role.strip():
+            query = query.eq('role', role)
+            
+        if status and status.strip():
+            query = query.eq('status', status)
+            
+        if search and search.strip():
+            search_str = search.strip()
+            query = query.or_(f"full_name.ilike.%{search_str}%,employee_id.ilike.%{search_str}%,username.ilike.%{search_str}%")
+            
+        query = query.order('created_at', desc=True)
+        response = query.execute()
+        
+        all_users = response.data or []
+        
+        # Client-side style pagination in Python
+        total = len(all_users)
+        start_idx = (page - 1) * page_size
+        end_idx = start_idx + page_size
+        paginated_users = all_users[start_idx:end_idx]
+        
+        # Exclude password hashes from response data
+        for u in paginated_users:
+            u.pop('password_hash', None)
+            
+        return jsonify({
+            "success": True,
+            "data": paginated_users,
+            "total": total,
+            "page": page,
+            "page_size": page_size
+        })
+    except Exception as e:
+        app.logger.error(f"Fetch users failed: {e}")
+        return jsonify({"success": False, "message": f"Failed to fetch users: {str(e)}"}), 500
+
+
+@app.route('/api/users/<int:user_id>', methods=['GET'])
+@super_admin_required
+def api_get_user_detail(user_id):
+    """Get detailed view of a user. Super Admin only."""
+    try:
+        supabase = get_supabase()
+        response = supabase.table('users').select('*').eq('id', user_id).execute()
+        if not response.data:
+            return jsonify({"success": False, "message": "User not found."}), 404
+            
+        user = response.data[0]
+        user.pop('password_hash', None)
+        return jsonify({"success": True, "data": user})
+    except Exception as e:
+        app.logger.error(f"Fetch user details failed: {e}")
+        return jsonify({"success": False, "message": f"Failed to load user details: {str(e)}"}), 500
+
+
+@app.route('/api/users/<int:user_id>', methods=['PUT'])
+@super_admin_required
+def api_update_user(user_id):
+    """Update user details. Super Admin only."""
+    try:
+        data = request.json or {}
+        full_name = data.get('full_name')
+        username = data.get('username')
+        password = data.get('password')
+        role = data.get('role')
+        status = data.get('status')
+        
+        if not all([full_name, username, role, status]):
+            return jsonify({"success": False, "message": "Missing required fields."}), 400
+            
+        if role not in ['super_admin', 'admin_store_head']:
+            return jsonify({"success": False, "message": "Invalid role."}), 400
+            
+        if status not in ['Active', 'Inactive']:
+            return jsonify({"success": False, "message": "Invalid status."}), 400
+            
+        supabase = get_supabase()
+        
+        # Check username conflicts
+        check_username = supabase.table('users').select('id').eq('username', username.lower().strip()).neq('id', user_id).execute()
+        if check_username.data:
+            return jsonify({"success": False, "message": "Username already in use by another user."}), 400
+            
+        db_payload = {
+            "full_name": str(full_name).strip(),
+            "username": str(username).strip().lower(),
+            "role": role,
+            "status": status,
+            "updated_at": datetime.datetime.now(datetime.timezone.utc).isoformat()
+        }
+        
+        if password and str(password).strip():
+            from werkzeug.security import generate_password_hash
+            db_payload["password_hash"] = generate_password_hash(password)
+            
+        response = supabase.table('users').update(db_payload).eq('id', user_id).execute()
+        if not response.data:
+            return jsonify({"success": False, "message": "User not found or update failed."}), 404
+            
+        admin_name = session.get('full_name', 'Super Admin')
+        log_audit_action(admin_name, f"Updated User: {full_name} (ID: {user_id})")
+        
+        return jsonify({"success": True, "message": "User updated successfully!"})
+    except Exception as e:
+        app.logger.error(f"Update user failed: {e}")
+        return jsonify({"success": False, "message": f"Update failed: {str(e)}"}), 500
+
+
+@app.route('/api/users/<int:user_id>', methods=['DELETE'])
+@super_admin_required
+def api_delete_user(user_id):
+    """Delete a user. Super Admin only."""
+    try:
+        # Prevent self-deletion
+        if session.get('user_id') == user_id:
+            return jsonify({"success": False, "message": "You cannot delete your own account."}), 400
+            
+        supabase = get_supabase()
+        # Get details for audit log
+        user_resp = supabase.table('users').select('full_name, employee_id').eq('id', user_id).execute()
+        if not user_resp.data:
+            return jsonify({"success": False, "message": "User not found."}), 404
+            
+        target_user = user_resp.data[0]
+        
+        response = supabase.table('users').delete().eq('id', user_id).execute()
+        if not response.data:
+            return jsonify({"success": False, "message": "Delete failed."}), 500
+            
+        admin_name = session.get('full_name', 'Super Admin')
+        log_audit_action(admin_name, f"Deleted User: {target_user.get('full_name')} ({target_user.get('employee_id')})")
+        
+        return jsonify({"success": True, "message": "User deleted successfully!"})
+    except Exception as e:
+        app.logger.error(f"Delete user failed: {e}")
+        return jsonify({"success": False, "message": f"Delete failed: {str(e)}"}), 500
+
+
+@app.route('/api/users/status', methods=['PATCH'])
+@super_admin_required
+def api_patch_user_status():
+    """Toggle status of a user (Active/Inactive). Super Admin only."""
+    try:
+        data = request.json or {}
+        user_id = data.get('user_id')
+        status = data.get('status')
+        
+        if not user_id or not status or status not in ['Active', 'Inactive']:
+            return jsonify({"success": False, "message": "Invalid request arguments."}), 400
+            
+        # Prevent deactivating self
+        if session.get('user_id') == int(user_id) and status == 'Inactive':
+            return jsonify({"success": False, "message": "You cannot deactivate your own account."}), 400
+            
+        supabase = get_supabase()
+        # Fetch details
+        user_resp = supabase.table('users').select('full_name').eq('id', int(user_id)).execute()
+        if not user_resp.data:
+            return jsonify({"success": False, "message": "User not found."}), 404
+            
+        full_name = user_resp.data[0].get('full_name')
+        
+        response = supabase.table('users').update({"status": status}).eq('id', int(user_id)).execute()
+        if not response.data:
+            return jsonify({"success": False, "message": "Status update failed."}), 500
+            
+        admin_name = session.get('full_name', 'Super Admin')
+        log_audit_action(admin_name, f"Changed User Status: {full_name} to {status}")
+        
+        return jsonify({"success": True, "message": f"User status successfully updated to {status}!"})
+    except Exception as e:
+        app.logger.error(f"Patch user status failed: {e}")
+        return jsonify({"success": False, "message": f"Status update failed: {str(e)}"}), 500
+
+
+@app.route('/api/admin/audit-logs', methods=['GET'])
+@super_admin_required
+def api_get_audit_logs():
+    """Fetch recent system administration audit logs. Super Admin only."""
+    try:
+        supabase = get_supabase()
+        response = supabase.table('audit_logs').select('*').order('created_at', desc=True).limit(100).execute()
+        return jsonify({"success": True, "data": response.data or []})
+    except Exception as e:
+        app.logger.error(f"Fetch audit logs failed: {e}")
+        return jsonify({"success": False, "message": "Failed to retrieve audit logs."}), 500
+
 
 # ----------------------------------------------------
 # Main Startup block

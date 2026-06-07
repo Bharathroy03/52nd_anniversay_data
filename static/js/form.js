@@ -4,9 +4,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("customerForm");
   const storeSelect = document.getElementById("store_id"); // hidden input
   const mobileInput = document.getElementById("mobile_number");
-  const issueSelect = document.getElementById("invitation_card_issue");
-  const issueContainer = document.getElementById("issue-description-container");
-  const issueTextarea = document.getElementById("issue_description");
   const successToast = document.getElementById("successToast");
   const successModal = document.getElementById("successModal");
   const modalCloseBtn = document.getElementById("modalCloseBtn");
@@ -19,6 +16,27 @@ document.addEventListener("DOMContentLoaded", () => {
   const storeSearchInput = document.getElementById("storeSearchInput");
   const storeOptionsList = document.getElementById("storeOptionsList");
   const selectedTextSpan = storeTrigger ? storeTrigger.querySelector(".selected-text") : null;
+
+  // Custom Registration Status Elements
+  const regStatusTrigger = document.getElementById("reg_status_trigger");
+  const regStatusModal = document.getElementById("regStatusModal");
+  const regStatusCloseBtn = document.getElementById("regStatusCloseBtn");
+  const regStatusSearchInput = document.getElementById("regStatusSearchInput");
+  const regStatusOptionsList = document.getElementById("regStatusOptionsList");
+  const regStatusInput = document.getElementById("app_registration_status"); // hidden input
+  const regStatusText = regStatusTrigger ? regStatusTrigger.querySelector(".selected-text") : null;
+
+  // Custom Invitation Elements
+  const invitationTrigger = document.getElementById("invitation_trigger");
+  const invitationModal = document.getElementById("invitationModal");
+  const invitationCloseBtn = document.getElementById("invitationCloseBtn");
+  const invitationSearchInput = document.getElementById("invitationSearchInput");
+  const invitationOptionsList = document.getElementById("invitationOptionsList");
+  const invitationInput = document.getElementById("invitation_card_issue"); // hidden input
+  const invitationText = invitationTrigger ? invitationTrigger.querySelector(".selected-text") : null;
+
+  const issueContainer = document.getElementById("issue-description-container");
+  const issueTextarea = document.getElementById("issue_description");
 
   let allStores = [];
   let selectedStoreId = "";
@@ -168,13 +186,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Close modal on escape key
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") {
-      closeStoreModal();
-    }
-  });
-
   // Search filter
   if (storeSearchInput) {
     storeSearchInput.addEventListener("input", (e) => {
@@ -186,22 +197,216 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Toggle display of Issue Description conditionally
-  if (issueSelect) {
-    issueSelect.addEventListener("change", () => {
-      if (issueSelect.value === "Yes") {
-        if (issueContainer) issueContainer.classList.add("show");
-        if (issueTextarea) issueTextarea.setAttribute("required", "true");
-      } else {
-        if (issueContainer) issueContainer.classList.remove("show");
-        if (issueTextarea) {
-          issueTextarea.removeAttribute("required");
-          issueTextarea.value = "";
-          clearError(issueTextarea);
+  // --- App Registration Status Custom Select Logic ---
+  function openRegStatusModal() {
+    if (!regStatusModal) return;
+    regStatusModal.classList.add("show");
+    if (regStatusSearchInput) {
+      regStatusSearchInput.value = "";
+    }
+    const val = regStatusInput ? regStatusInput.value : "";
+    if (regStatusOptionsList) {
+      const items = regStatusOptionsList.querySelectorAll(".store-option-item");
+      items.forEach(item => {
+        item.style.display = "";
+        if (item.getAttribute("data-value") === val) {
+          item.classList.add("selected");
+        } else {
+          item.classList.remove("selected");
         }
+      });
+    }
+    setTimeout(() => {
+      if (regStatusSearchInput) {
+        regStatusSearchInput.focus();
+      }
+    }, 100);
+  }
+
+  function closeRegStatusModal() {
+    if (regStatusModal) {
+      regStatusModal.classList.remove("show");
+    }
+  }
+
+  function selectRegStatus(value, text) {
+    if (regStatusInput) {
+      regStatusInput.value = value;
+    }
+    if (regStatusText) {
+      regStatusText.textContent = text;
+      regStatusText.classList.remove("text-muted");
+    }
+    if (regStatusTrigger) {
+      clearError(regStatusTrigger);
+    }
+    closeRegStatusModal();
+  }
+
+  if (regStatusTrigger) {
+    regStatusTrigger.addEventListener("click", openRegStatusModal);
+    regStatusTrigger.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        openRegStatusModal();
       }
     });
   }
+
+  if (regStatusCloseBtn) {
+    regStatusCloseBtn.addEventListener("click", closeRegStatusModal);
+  }
+
+  if (regStatusModal) {
+    regStatusModal.addEventListener("click", (e) => {
+      if (e.target === regStatusModal) {
+        closeRegStatusModal();
+      }
+    });
+  }
+
+  if (regStatusSearchInput) {
+    regStatusSearchInput.addEventListener("input", (e) => {
+      const query = e.target.value.toLowerCase().trim();
+      if (regStatusOptionsList) {
+        const items = regStatusOptionsList.querySelectorAll(".store-option-item");
+        items.forEach(item => {
+          const text = item.textContent.toLowerCase();
+          if (text.includes(query)) {
+            item.style.display = "";
+          } else {
+            item.style.display = "none";
+          }
+        });
+      }
+    });
+  }
+
+  if (regStatusOptionsList) {
+    const items = regStatusOptionsList.querySelectorAll(".store-option-item");
+    items.forEach(item => {
+      item.addEventListener("click", () => {
+        selectRegStatus(item.getAttribute("data-value"), item.textContent);
+      });
+    });
+  }
+
+  // --- Invitation Card Details Custom Select Logic ---
+  function openInvitationModal() {
+    if (!invitationModal) return;
+    invitationModal.classList.add("show");
+    if (invitationSearchInput) {
+      invitationSearchInput.value = "";
+    }
+    const val = invitationInput ? invitationInput.value : "";
+    if (invitationOptionsList) {
+      const items = invitationOptionsList.querySelectorAll(".store-option-item");
+      items.forEach(item => {
+        item.style.display = "";
+        if (item.getAttribute("data-value") === val) {
+          item.classList.add("selected");
+        } else {
+          item.classList.remove("selected");
+        }
+      });
+    }
+    setTimeout(() => {
+      if (invitationSearchInput) {
+        invitationSearchInput.focus();
+      }
+    }, 100);
+  }
+
+  function closeInvitationModal() {
+    if (invitationModal) {
+      invitationModal.classList.remove("show");
+    }
+  }
+
+  function selectInvitation(value, text) {
+    if (invitationInput) {
+      invitationInput.value = value;
+    }
+    if (invitationText) {
+      invitationText.textContent = text;
+      invitationText.classList.remove("text-muted");
+    }
+    if (invitationTrigger) {
+      clearError(invitationTrigger);
+    }
+    
+    // Toggle display of Issue Description conditionally
+    if (value === "Yes") {
+      if (issueContainer) issueContainer.classList.add("show");
+      if (issueTextarea) issueTextarea.setAttribute("required", "true");
+    } else {
+      if (issueContainer) issueContainer.classList.remove("show");
+      if (issueTextarea) {
+        issueTextarea.removeAttribute("required");
+        issueTextarea.value = "";
+        clearError(issueTextarea);
+      }
+    }
+    
+    closeInvitationModal();
+  }
+
+  if (invitationTrigger) {
+    invitationTrigger.addEventListener("click", openInvitationModal);
+    invitationTrigger.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        openInvitationModal();
+      }
+    });
+  }
+
+  if (invitationCloseBtn) {
+    invitationCloseBtn.addEventListener("click", closeInvitationModal);
+  }
+
+  if (invitationModal) {
+    invitationModal.addEventListener("click", (e) => {
+      if (e.target === invitationModal) {
+        closeInvitationModal();
+      }
+    });
+  }
+
+  if (invitationSearchInput) {
+    invitationSearchInput.addEventListener("input", (e) => {
+      const query = e.target.value.toLowerCase().trim();
+      if (invitationOptionsList) {
+        const items = invitationOptionsList.querySelectorAll(".store-option-item");
+        items.forEach(item => {
+          const text = item.textContent.toLowerCase();
+          if (text.includes(query)) {
+            item.style.display = "";
+          } else {
+            item.style.display = "none";
+          }
+        });
+      }
+    });
+  }
+
+  if (invitationOptionsList) {
+    const items = invitationOptionsList.querySelectorAll(".store-option-item");
+    items.forEach(item => {
+      item.addEventListener("click", () => {
+        selectInvitation(item.getAttribute("data-value"), item.textContent);
+      });
+    });
+  }
+
+  // Close all modals on escape key
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      closeStoreModal();
+      closeRegStatusModal();
+      closeInvitationModal();
+    }
+  });
 
   // Numeric only clean filter for mobile number
   if (mobileInput) {
@@ -258,11 +463,11 @@ document.addEventListener("DOMContentLoaded", () => {
     let firstInvalidCard = null;
 
     if (!storeSelect.value) {
-      showError(storeSelect, "store-error");
+      showError(storeTrigger, "store-error");
       isValid = false;
       if (!firstInvalidCard) firstInvalidCard = document.getElementById("card-store");
     } else {
-      clearError(storeSelect);
+      clearError(storeTrigger);
     }
 
     const nameInput = document.getElementById("customer_name");
@@ -283,24 +488,23 @@ document.addEventListener("DOMContentLoaded", () => {
       clearError(mobileInput);
     }
 
-    const regStatus = document.getElementById("app_registration_status");
-    if (!regStatus.value) {
-      showError(regStatus, "registration-error");
+    if (!regStatusInput.value) {
+      showError(regStatusTrigger, "registration-error");
       isValid = false;
       if (!firstInvalidCard) firstInvalidCard = document.getElementById("card-registration");
     } else {
-      clearError(regStatus);
+      clearError(regStatusTrigger);
     }
 
-    if (!issueSelect.value) {
-      showError(issueSelect, "issue-option-error");
+    if (!invitationInput.value) {
+      showError(invitationTrigger, "issue-option-error");
       isValid = false;
       if (!firstInvalidCard) firstInvalidCard = document.getElementById("card-issue-option");
     } else {
-      clearError(issueSelect);
+      clearError(invitationTrigger);
     }
 
-    if (issueSelect.value === "Yes" && !issueTextarea.value.trim()) {
+    if (invitationInput.value === "Yes" && !issueTextarea.value.trim()) {
       showError(issueTextarea, "issue-desc-error");
       isValid = false;
       if (!firstInvalidCard) firstInvalidCard = document.getElementById("card-issue-option");
@@ -324,7 +528,9 @@ document.addEventListener("DOMContentLoaded", () => {
     errorMsgs.forEach(msg => msg.style.display = "none");
     
     issueContainer.classList.remove("show");
-    issueTextarea.removeAttribute("required");
+    if (issueTextarea) {
+      issueTextarea.removeAttribute("required");
+    }
 
     // Reset Custom Store Selector
     selectedStoreId = "";
@@ -334,6 +540,24 @@ document.addEventListener("DOMContentLoaded", () => {
     if (selectedTextSpan) {
       selectedTextSpan.textContent = "Select a store";
       selectedTextSpan.classList.add("text-muted");
+    }
+
+    // Reset Custom App Registration Status
+    if (regStatusInput) {
+      regStatusInput.value = "";
+    }
+    if (regStatusText) {
+      regStatusText.textContent = "Choose registration status";
+      regStatusText.classList.add("text-muted");
+    }
+
+    // Reset Custom Invitation Issues
+    if (invitationInput) {
+      invitationInput.value = "";
+    }
+    if (invitationText) {
+      invitationText.textContent = "Choose option";
+      invitationText.classList.add("text-muted");
     }
   });
 
@@ -358,8 +582,8 @@ document.addEventListener("DOMContentLoaded", () => {
         store_id: storeSelect ? storeSelect.value : "",
         customer_name: document.getElementById("customer_name") ? document.getElementById("customer_name").value : "",
         mobile_number: mobileInput ? mobileInput.value : "",
-        app_registration_status: document.getElementById("app_registration_status") ? document.getElementById("app_registration_status").value : "",
-        invitation_issue: issueSelect ? issueSelect.value : "",
+        app_registration_status: regStatusInput ? regStatusInput.value : "",
+        invitation_issue: invitationInput ? invitationInput.value : "",
         issue_description: issueTextarea ? issueTextarea.value : ""
       };
 

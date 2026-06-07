@@ -90,12 +90,10 @@
         </div>
         <div class="form-group">
           <label class="form-label" for="app_registration_status">App Registration Status <span class="required">*</span></label>
-          <select class="form-control" id="app_registration_status" name="app_registration_status" required>
-            <option value="" disabled selected>Choose registration status</option>
-            <option value="Completed">Completed</option>
-            <option value="Pending">Pending</option>
-            <option value="Not Interested">Not Interested</option>
-          </select>
+          <div class="custom-select-trigger form-control" id="reg_status_trigger" tabindex="0">
+            <span class="selected-text text-muted">Choose registration status</span>
+          </div>
+          <input type="hidden" id="app_registration_status" name="app_registration_status" required>
           <div class="error-msg" id="registration-error">Please select an app registration status.</div>
         </div>
       </div>
@@ -108,11 +106,10 @@
         
         <div class="form-group">
           <label class="form-label" for="invitation_card_issue">Invitation Card Issues? <span class="required">*</span></label>
-          <select class="form-control" id="invitation_card_issue" name="invitation_card_issue" required>
-            <option value="" disabled selected>Choose option</option>
-            <option value="Yes">Yes</option>
-            <option value="No">No</option>
-          </select>
+          <div class="custom-select-trigger form-control" id="invitation_trigger" tabindex="0">
+            <span class="selected-text text-muted">Choose option</span>
+          </div>
+          <input type="hidden" id="invitation_card_issue" name="invitation_card_issue" required>
           <div class="error-msg" id="issue-option-error">Please select if there is an invitation card issue.</div>
         </div>
         
@@ -169,6 +166,43 @@
       </div>
       <div class="store-options-list" id="storeOptionsList">
         <div class="store-loading">Loading stores...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- App Registration Status Selection Modal -->
+  <div class="modal-overlay" id="regStatusModal">
+    <div class="modal-card store-modal-card">
+      <div class="store-modal-header">
+        <h2>Select Registration Status</h2>
+        <button type="button" class="store-modal-close" id="regStatusCloseBtn">&times;</button>
+      </div>
+      <div class="store-search-wrapper">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="regStatusSearchInput" class="form-control store-search-input" placeholder="Search option...">
+      </div>
+      <div class="store-options-list" id="regStatusOptionsList">
+        <div class="store-option-item" data-value="Completed">Completed</div>
+        <div class="store-option-item" data-value="Pending">Pending</div>
+        <div class="store-option-item" data-value="Not Interested">Not Interested</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Invitation Card Option Selection Modal -->
+  <div class="modal-overlay" id="invitationModal">
+    <div class="modal-card store-modal-card">
+      <div class="store-modal-header">
+        <h2>Invitation Card Issues?</h2>
+        <button type="button" class="store-modal-close" id="invitationCloseBtn">&times;</button>
+      </div>
+      <div class="store-search-wrapper">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="invitationSearchInput" class="form-control store-search-input" placeholder="Search option...">
+      </div>
+      <div class="store-options-list" id="invitationOptionsList">
+        <div class="store-option-item" data-value="Yes">Yes</div>
+        <div class="store-option-item" data-value="No">No</div>
       </div>
     </div>
   </div>

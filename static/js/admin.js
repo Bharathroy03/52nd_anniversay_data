@@ -691,6 +691,12 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
+      // Hide Actions header column if admin_store_head
+      const actionsHeader = document.querySelector("#submissionsTable th:nth-child(9)");
+      if (actionsHeader) {
+        actionsHeader.style.display = (currentUserRole === 'admin_store_head') ? 'none' : '';
+      }
+
       tableBody.innerHTML = "";
       
       paginatedData.forEach(sub => {
@@ -711,36 +717,51 @@ document.addEventListener("DOMContentLoaded", () => {
           ? "badge-issue-yes" 
           : "badge-issue-no";
 
-        tr.innerHTML = `
-          <td>${sub.id}</td>
-          <td style="white-space: nowrap;">${dateStr}</td>
-          <td><strong>${sub.store_name}</strong></td>
-          <td class="td-name">${sub.customer_name}</td>
-          <td>${sub.mobile_number}</td>
-          <td><span class="badge ${regBadgeClass}">${sub.app_registration_status}</span></td>
-          <td><span class="badge ${issueBadgeClass}">${sub.invitation_issue}</span></td>
-          <td class="td-desc" title="${sub.issue_description || 'No Issue'}">${sub.issue_description || '<span style="color:#9ca3af;">No Issue</span>'}</td>
-          <td class="action-cell">
-            <button class="action-btn action-btn-edit" title="Edit" data-id="${sub.id}">✏️</button>
-            <button class="action-btn action-btn-delete" title="Delete" data-id="${sub.id}">🗑️</button>
-          </td>
-        `;
+        if (currentUserRole === 'admin_store_head') {
+          tr.innerHTML = `
+            <td>${sub.id}</td>
+            <td style="white-space: nowrap;">${dateStr}</td>
+            <td><strong>${sub.store_name}</strong></td>
+            <td class="td-name">${sub.customer_name}</td>
+            <td>${sub.mobile_number}</td>
+            <td><span class="badge ${regBadgeClass}">${sub.app_registration_status}</span></td>
+            <td><span class="badge ${issueBadgeClass}">${sub.invitation_issue}</span></td>
+            <td class="td-desc" title="${sub.issue_description || 'No Issue'}">${sub.issue_description || '<span style="color:#9ca3af;">No Issue</span>'}</td>
+          `;
+        } else {
+          tr.innerHTML = `
+            <td>${sub.id}</td>
+            <td style="white-space: nowrap;">${dateStr}</td>
+            <td><strong>${sub.store_name}</strong></td>
+            <td class="td-name">${sub.customer_name}</td>
+            <td>${sub.mobile_number}</td>
+            <td><span class="badge ${regBadgeClass}">${sub.app_registration_status}</span></td>
+            <td><span class="badge ${issueBadgeClass}">${sub.invitation_issue}</span></td>
+            <td class="td-desc" title="${sub.issue_description || 'No Issue'}">${sub.issue_description || '<span style="color:#9ca3af;">No Issue</span>'}</td>
+            <td class="action-cell">
+              <button class="action-btn action-btn-edit" title="Edit" data-id="${sub.id}">✏️</button>
+              <button class="action-btn action-btn-delete" title="Delete" data-id="${sub.id}">🗑️</button>
+            </td>
+          `;
+          
+          // Bind edit button
+          const editBtn = tr.querySelector(".action-btn-edit");
+          if (editBtn) editBtn.addEventListener("click", () => openEditModal(sub));
+          
+          // Bind delete button
+          const delBtn = tr.querySelector(".action-btn-delete");
+          if (delBtn) delBtn.addEventListener("click", () => openDeleteModal(sub.id, sub.customer_name));
+        }
 
         if (sub.issue_description) {
           const descCell = tr.querySelector(".td-desc");
-          descCell.style.cursor = "pointer";
-          descCell.addEventListener("click", () => {
-            descCell.classList.toggle("expanded");
-          });
+          if (descCell) {
+            descCell.style.cursor = "pointer";
+            descCell.addEventListener("click", () => {
+              descCell.classList.toggle("expanded");
+            });
+          }
         }
-
-        // Bind edit button
-        const editBtn = tr.querySelector(".action-btn-edit");
-        editBtn.addEventListener("click", () => openEditModal(sub));
-        
-        // Bind delete button
-        const delBtn = tr.querySelector(".action-btn-delete");
-        delBtn.addEventListener("click", () => openDeleteModal(sub.id, sub.customer_name));
 
         tableBody.appendChild(tr);
       });
@@ -1551,20 +1572,584 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
+    // ====================================================
+    // DYNAMIC NAVIGATION AND SPA ROUTING
+    // ====================================================
+    const mainDashboardSections = [
+      document.getElementById("overview-section"),
+      document.querySelector(".analytics-highlight-grid"),
+      document.getElementById("charts-section"),
+      document.getElementById("analytics-filter-section"),
+      document.querySelector("section.filter-card:not(#analytics-filter-section)"),
+      document.getElementById("stores-section"),
+      document.getElementById("logs-section")
+    ];
+    
+    const customPages = [
+      document.getElementById("user-mgmt-section"),
+      document.getElementById("export-center-section"),
+      document.getElementById("role-mgmt-section"),
+      document.getElementById("printable-reports-section")
+    ];
+
+    navItems.forEach(item => {
+      item.addEventListener("click", (e) => {
+        const targetHref = item.getAttribute("href");
+        
+        if (item.id === "nav-settings" || item.id === "nav-data-mgmt") {
+          e.preventDefault();
+          return; // Handled separately
+        }
+        
+        if (targetHref && targetHref.startsWith("#")) {
+          const targetId = targetHref.substring(1);
+          const customPageIds = ["user-mgmt-section", "export-center-section", "role-mgmt-section", "printable-reports-section"];
+          
+          if (customPageIds.includes(targetId)) {
+            e.preventDefault();
+            // Hide main dashboard
+            mainDashboardSections.forEach(sec => { if (sec) sec.style.display = "none"; });
+            // Hide custom pages
+            customPages.forEach(sec => { if (sec) sec.style.display = "none"; });
+            
+            // Show target custom page
+            const targetSec = document.getElementById(targetId);
+            if (targetSec) targetSec.style.display = "block";
+            
+            // Fetch relevant data
+            if (targetId === "user-mgmt-section") {
+              fetchUsersList();
+            } else if (targetId === "role-mgmt-section") {
+              fetchAdminAuditLogs();
+            } else if (targetId === "printable-reports-section") {
+              renderPrintableReport();
+            }
+          } else {
+            // Dashboard section anchor
+            mainDashboardSections.forEach(sec => { if (sec) sec.style.display = ""; });
+            customPages.forEach(sec => { if (sec) sec.style.display = "none"; });
+            
+            const targetSec = document.getElementById(targetId);
+            if (targetSec) {
+              targetSec.scrollIntoView({ behavior: "smooth" });
+            }
+          }
+        }
+        
+        navItems.forEach(nav => nav.classList.remove("active"));
+        item.classList.add("active");
+        
+        if (sidebar && sidebar.classList.contains("active")) {
+          sidebar.classList.remove("active");
+        }
+      });
+    });
+
+    // ====================================================
+    // USER MANAGEMENT CRUD MODULE
+    // ====================================================
+    const userModalOverlay = document.getElementById("userModalOverlay");
+    const userModalClose = document.getElementById("userModalClose");
+    const userForm = document.getElementById("userForm");
+    const userCancelBtn = document.getElementById("userCancelBtn");
+    const userModalTitle = document.getElementById("userModalTitle");
+    const userSaveBtn = document.getElementById("userSaveBtn");
+    
+    const userFormId = document.getElementById("userFormId");
+    const userEmpId = document.getElementById("userEmpId");
+    const userFullName = document.getElementById("userFullName");
+    const userUsername = document.getElementById("userUsername");
+    const userPassword = document.getElementById("userPassword");
+    const userRole = document.getElementById("userRole");
+    const userStatus = document.getElementById("userStatus");
+    const empIdGroup = document.getElementById("empIdGroup");
+    const userPassRequired = document.getElementById("userPassRequired");
+    const userPassHelp = document.getElementById("userPassHelp");
+    
+    const userSearchInput = document.getElementById("userSearchInput");
+    const userRoleFilter = document.getElementById("userRoleFilter");
+    const userStatusFilter = document.getElementById("userStatusFilter");
+    const usersTableBody = document.getElementById("usersTableBody");
+    
+    const userPrevPageBtn = document.getElementById("userPrevPageBtn");
+    const userNextPageBtn = document.getElementById("userNextPageBtn");
+    const userPaginationInfo = document.getElementById("userPaginationInfo");
+    
+    // User Delete modal
+    const userDeleteModalOverlay = document.getElementById("userDeleteModalOverlay");
+    const userDeleteModalClose = document.getElementById("userDeleteModalClose");
+    const userDeleteCancelBtn = document.getElementById("userDeleteCancelBtn");
+    const userDeleteConfirmBtn = document.getElementById("userDeleteConfirmBtn");
+    
+    let userCurrentPage = 1;
+    let userPageSize = 10;
+    let pendingDeleteUserId = null;
+    let userSearchTimeout = null;
+
+    if (document.getElementById("addUserBtn")) {
+      document.getElementById("addUserBtn").addEventListener("click", () => openUserModal());
+    }
+    if (userModalClose) userModalClose.addEventListener("click", closeUserModal);
+    if (userCancelBtn) userCancelBtn.addEventListener("click", closeUserModal);
+    if (userDeleteModalClose) userDeleteModalClose.addEventListener("click", closeUserDeleteModal);
+    if (userDeleteCancelBtn) userDeleteCancelBtn.addEventListener("click", closeUserDeleteModal);
+
+    function openUserModal(user = null) {
+      if (!userModalOverlay) return;
+      userForm.reset();
+      
+      if (user) {
+        // Edit Mode
+        userModalTitle.textContent = "✏️ Edit User Account";
+        userFormId.value = user.id;
+        userEmpId.value = user.employee_id;
+        if (empIdGroup) empIdGroup.style.display = "none"; // Hide employee ID input on edit
+        userFullName.value = user.full_name;
+        userUsername.value = user.username;
+        userPassword.required = false;
+        if (userPassRequired) userPassRequired.style.display = "none";
+        if (userPassHelp) userPassHelp.style.display = "block";
+        userRole.value = user.role;
+        userStatus.value = user.status;
+        userSaveBtn.textContent = "💾 Save Changes";
+      } else {
+        // Add Mode
+        userModalTitle.textContent = "👥 Add User Account";
+        userFormId.value = "";
+        if (empIdGroup) empIdGroup.style.display = "block";
+        userEmpId.required = true;
+        userPassword.required = true;
+        if (userPassRequired) userPassRequired.style.display = "inline";
+        if (userPassHelp) userPassHelp.style.display = "none";
+        userSaveBtn.textContent = "💾 Save User";
+      }
+      
+      userModalOverlay.style.display = "flex";
+    }
+
+    function closeUserModal() {
+      if (userModalOverlay) userModalOverlay.style.display = "none";
+    }
+
+    if (userForm) {
+      userForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        
+        const userId = userFormId.value;
+        const isEdit = userId !== "";
+        
+        const payload = {
+          full_name: userFullName.value.trim(),
+          username: userUsername.value.trim(),
+          role: userRole.value,
+          status: userStatus.value,
+          password: userPassword.value
+        };
+        
+        if (!isEdit) {
+          payload.employee_id = userEmpId.value.trim();
+        }
+        
+        const url = isEdit ? `/api/users/${userId}` : '/api/users';
+        const method = isEdit ? 'PUT' : 'POST';
+        
+        try {
+          const res = await fetch(url, {
+            method: method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          
+          const result = await res.json();
+          if (res.ok && result.success) {
+            showToast(result.message || "Operation successful!");
+            closeUserModal();
+            fetchUsersList();
+          } else {
+            alert(result.message || "Failed to save user.");
+          }
+        } catch (err) {
+          console.error("Save user error:", err);
+          alert("Error contacting server to save user.");
+        }
+      });
+    }
+
+    async function fetchUsersList() {
+      if (!usersTableBody) return;
+      
+      const search = userSearchInput ? userSearchInput.value.trim() : "";
+      const role = userRoleFilter ? userRoleFilter.value : "";
+      const status = userStatusFilter ? userStatusFilter.value : "";
+      
+      const params = new URLSearchParams();
+      if (search) params.append("search", search);
+      if (role) params.append("role", role);
+      if (status) params.append("status", status);
+      params.append("page", userCurrentPage);
+      params.append("page_size", userPageSize);
+      
+      try {
+        const res = await fetch(`/api/users?${params.toString()}`);
+        if (res.status === 401) {
+          handleSessionExpired();
+          return;
+        }
+        if (res.status === 403) {
+          usersTableBody.innerHTML = '<tr><td colspan="7" class="table-empty"><div class="icon">⚠️</div><div style="color:var(--color-danger)">Access Denied: Super Admin permissions required.</div></td></tr>';
+          return;
+        }
+        
+        const result = await res.json();
+        if (result.success && Array.isArray(result.data)) {
+          renderUsersTable(result.data, result.total);
+        } else {
+          usersTableBody.innerHTML = '<tr><td colspan="7" class="table-empty"><div class="icon">⚠️</div><div>Failed to load users list.</div></td></tr>';
+        }
+      } catch (err) {
+        console.error("Fetch users error:", err);
+        usersTableBody.innerHTML = '<tr><td colspan="7" class="table-empty"><div class="icon">⚠️</div><div>Error connecting to server.</div></td></tr>';
+      }
+    }
+
+    function renderUsersTable(users, total) {
+      usersTableBody.innerHTML = "";
+      
+      if (users.length === 0) {
+        usersTableBody.innerHTML = '<tr><td colspan="7" class="table-empty"><div class="icon">👤</div><div>No users found.</div></td></tr>';
+        if (userPaginationInfo) userPaginationInfo.textContent = "Showing 0-0 of 0 users";
+        if (userPrevPageBtn) userPrevPageBtn.disabled = true;
+        if (userNextPageBtn) userNextPageBtn.disabled = true;
+        return;
+      }
+      
+      users.forEach(user => {
+        const tr = document.createElement("tr");
+        const dateStr = user.created_at ? new Date(user.created_at).toLocaleDateString() : "N/A";
+        
+        const statusBadgeClass = user.status === 'Active' ? 'badge-completed' : 'badge-pending';
+        const roleLabel = user.role === 'super_admin' ? 'Super Admin' : 'Admin & Store Head';
+        
+        const isSelf = sessionNameAndDetailsMatchSelf(user.employee_id);
+        
+        tr.innerHTML = `
+          <td><strong>${user.employee_id}</strong></td>
+          <td>${user.full_name}</td>
+          <td>${user.username}</td>
+          <td><span class="badge ${user.role === 'super_admin' ? 'badge-completed' : 'badge-pending'}">${roleLabel}</span></td>
+          <td>
+            <label class="status-switch">
+              <input type="checkbox" class="status-toggle-checkbox" data-id="${user.id}" ${user.status === 'Active' ? 'checked' : ''} ${isSelf ? 'disabled' : ''}>
+              <span class="status-slider"></span>
+            </label>
+            <span style="font-size:0.8rem; margin-left: 5px;" class="status-label">${user.status}</span>
+          </td>
+          <td>${dateStr}</td>
+          <td class="action-cell">
+            <button class="action-btn action-btn-edit" title="Edit" data-id="${user.id}">✏️</button>
+            <button class="action-btn action-btn-delete" title="Delete" data-id="${user.id}" ${isSelf ? 'disabled style="opacity:0.3; cursor:not-allowed;"' : ''}>🗑️</button>
+          </td>
+        `;
+        
+        // Bind Edit
+        tr.querySelector(".action-btn-edit").addEventListener("click", () => openUserModal(user));
+        
+        // Bind Delete
+        const delBtn = tr.querySelector(".action-btn-delete");
+        if (delBtn && !isSelf) {
+          delBtn.addEventListener("click", () => openUserDeleteModal(user.id, user.full_name));
+        }
+        
+        // Bind Status Switch
+        const switchInput = tr.querySelector(".status-toggle-checkbox");
+        if (switchInput && !isSelf) {
+          switchInput.addEventListener("change", (e) => {
+            toggleUserStatus(user.id, e.target.checked ? 'Active' : 'Inactive');
+          });
+        }
+        
+        usersTableBody.appendChild(tr);
+      });
+      
+      // Pagination state
+      const startEntry = (userCurrentPage - 1) * userPageSize + 1;
+      const endEntry = Math.min(userCurrentPage * userPageSize, total);
+      if (userPaginationInfo) {
+        userPaginationInfo.textContent = `Showing ${startEntry}-${endEntry} of ${total} users`;
+      }
+      
+      const totalPages = Math.ceil(total / userPageSize) || 1;
+      if (userPrevPageBtn) userPrevPageBtn.disabled = userCurrentPage === 1;
+      if (userNextPageBtn) userNextPageBtn.disabled = userCurrentPage === totalPages;
+    }
+
+    function sessionNameAndDetailsMatchSelf(empId) {
+      const greetingText = document.getElementById("userRoleGreeting") ? document.getElementById("userRoleGreeting").textContent : "";
+      const sideNameText = document.getElementById("sideUserName") ? document.getElementById("sideUserName").textContent : "";
+      return greetingText.includes(`(${empId})`) || sideNameText.includes(`(${empId})`);
+    }
+
+    async function toggleUserStatus(userId, newStatus) {
+      try {
+        const res = await fetch('/api/users/status', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user_id: userId, status: newStatus })
+        });
+        const result = await res.json();
+        if (res.ok && result.success) {
+          showToast(result.message || `User status updated to ${newStatus}`);
+          fetchUsersList();
+        } else {
+          alert(result.message || "Failed to update user status.");
+          fetchUsersList();
+        }
+      } catch (err) {
+        console.error("Toggle user status error:", err);
+        alert("Error connecting to server to toggle status.");
+        fetchUsersList();
+      }
+    }
+
+    function openUserDeleteModal(userId, fullName) {
+      if (!userDeleteModalOverlay) return;
+      pendingDeleteUserId = userId;
+      document.getElementById("userDeleteModalMessage").innerHTML = `Are you sure you want to delete the user account for <br><strong>${fullName}</strong>? <br><br>This action cannot be undone.`;
+      userDeleteModalOverlay.style.display = "flex";
+    }
+
+    function closeUserDeleteModal() {
+      if (userDeleteModalOverlay) userDeleteModalOverlay.style.display = "none";
+      pendingDeleteUserId = null;
+    }
+
+    if (userDeleteConfirmBtn) {
+      userDeleteConfirmBtn.addEventListener("click", async () => {
+        if (!pendingDeleteUserId) return;
+        try {
+          const res = await fetch(`/api/users/${pendingDeleteUserId}`, { method: 'DELETE' });
+          const result = await res.json();
+          if (res.ok && result.success) {
+            showToast(result.message || "User successfully deleted!");
+            closeUserDeleteModal();
+            fetchUsersList();
+          } else {
+            alert(result.message || "Failed to delete user.");
+          }
+        } catch (err) {
+          console.error("Delete user request error:", err);
+          alert("Error sending delete request to server.");
+        }
+      });
+    }
+
+    // Bind filters input & pagination buttons
+    if (userSearchInput) {
+      userSearchInput.addEventListener("input", () => {
+        clearTimeout(userSearchTimeout);
+        userSearchTimeout = setTimeout(() => {
+          userCurrentPage = 1;
+          fetchUsersList();
+        }, 300);
+      });
+    }
+    if (userRoleFilter) userRoleFilter.addEventListener("change", () => { userCurrentPage = 1; fetchUsersList(); });
+    if (userStatusFilter) userStatusFilter.addEventListener("change", () => { userCurrentPage = 1; fetchUsersList(); });
+    
+    if (userPrevPageBtn) {
+      userPrevPageBtn.addEventListener("click", () => {
+        if (userCurrentPage > 1) {
+          userCurrentPage--;
+          fetchUsersList();
+        }
+      });
+    }
+    if (userNextPageBtn) {
+      userNextPageBtn.addEventListener("click", () => {
+        userCurrentPage++;
+        fetchUsersList();
+      });
+    }
+
+    // ====================================================
+    // ROLE MANAGEMENT AUDIT LOGS MODULE
+    // ====================================================
+    async function fetchAdminAuditLogs() {
+      const logsBody = document.getElementById("adminAuditLogsBody");
+      if (!logsBody) return;
+      
+      try {
+        const res = await fetch("/api/admin/audit-logs");
+        if (res.status === 401) {
+          handleSessionExpired();
+          return;
+        }
+        
+        const result = await res.json();
+        if (result.success && Array.isArray(result.data)) {
+          renderAuditLogsTable(result.data);
+        } else {
+          logsBody.innerHTML = '<tr><td colspan="5" class="table-empty"><div class="icon">📜</div><div>No logs could be loaded.</div></td></tr>';
+        }
+      } catch (err) {
+        console.error("Fetch audit logs error:", err);
+        logsBody.innerHTML = '<tr><td colspan="5" class="table-empty"><div class="icon">⚠️</div><div>Error connecting to server.</div></td></tr>';
+      }
+    }
+
+    function renderAuditLogsTable(logs) {
+      const logsBody = document.getElementById("adminAuditLogsBody");
+      if (!logsBody) return;
+      
+      logsBody.innerHTML = "";
+      if (logs.length === 0) {
+        logsBody.innerHTML = '<tr><td colspan="5" class="table-empty"><div class="icon">📜</div><div>No audit logs found.</div></td></tr>';
+        return;
+      }
+      
+      logs.forEach(log => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td><strong>${log.user_name}</strong></td>
+          <td>${log.action}</td>
+          <td>${log.log_date}</td>
+          <td>${log.log_time}</td>
+          <td><code>${log.ip_address}</code></td>
+        `;
+        logsBody.appendChild(tr);
+      });
+    }
+
+    // ====================================================
+    // EXPORT CENTER MODULE
+    // ====================================================
+    const exportCenterExecuteBtn = document.getElementById("exportCenterExecuteBtn");
+    if (exportCenterExecuteBtn) {
+      exportCenterExecuteBtn.addEventListener("click", () => {
+        const format = document.querySelector('input[name="exportFormatRadio"]:checked').value;
+        const storeId = filterStore.value;
+        const status = filterStatus.value;
+        const search = filterSearch.value.trim();
+        const dateVal = filterDate.value;
+        
+        const params = new URLSearchParams();
+        if (storeId) params.append("store_id", storeId);
+        if (status) params.append("status", status);
+        if (search) params.append("search", search);
+        if (dateVal) params.append("date", dateVal);
+        
+        if (format === 'excel') {
+          window.open(`/api/admin/export-excel?${params.toString()}`, '_blank');
+        } else {
+          window.open(`/api/admin/export?${params.toString()}`, '_blank');
+        }
+      });
+    }
+
+    // ====================================================
+    // PRINTABLE REPORTS MODULE
+    // ====================================================
+    async function renderPrintableReport() {
+      const generatedDateSpan = document.getElementById("reportGeneratedDate");
+      const totalSubSpan = document.getElementById("reportTotalSubmissions");
+      const completedAppsSpan = document.getElementById("reportCompletedApps");
+      const issuesSpan = document.getElementById("reportIssuesCount");
+      const reportStoresBody = document.getElementById("reportStoresBody");
+      
+      if (generatedDateSpan) generatedDateSpan.textContent = new Date().toLocaleString();
+      
+      try {
+        const resStores = await fetch("/api/stores");
+        const resCustomers = await fetch("/api/admin/customers");
+        
+        if (!resStores.ok || !resCustomers.ok) {
+          if (reportStoresBody) reportStoresBody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:15px; color:var(--color-danger);">Error loading report data.</td></tr>';
+          return;
+        }
+        
+        const storesData = await resStores.json();
+        const customersData = await resCustomers.json();
+        
+        if (storesData.success && customersData.success) {
+          const stores = storesData.data;
+          const customers = customersData.data;
+          
+          const total = customers.length;
+          const completed = customers.filter(c => c.app_registration_status === 'Completed').length;
+          const issues = customers.filter(c => c.invitation_issue === 'Yes').length;
+          
+          if (totalSubSpan) totalSubSpan.textContent = total;
+          if (completedAppsSpan) completedAppsSpan.textContent = completed;
+          if (issuesSpan) issuesSpan.textContent = issues;
+          
+          const storeStats = {};
+          stores.forEach(s => {
+            storeStats[s.store_name] = { completed: 0, pending: 0, not_interested: 0, issues: 0, total: 0 };
+          });
+          
+          customers.forEach(c => {
+            const storeName = c.store_name;
+            if (!storeStats[storeName]) {
+              storeStats[storeName] = { completed: 0, pending: 0, not_interested: 0, issues: 0, total: 0 };
+            }
+            const stats = storeStats[storeName];
+            stats.total++;
+            if (c.app_registration_status === 'Completed') stats.completed++;
+            else if (c.app_registration_status === 'Pending') stats.pending++;
+            else if (c.app_registration_status === 'Not Interested') stats.not_interested++;
+            
+            if (c.invitation_issue === 'Yes') stats.issues++;
+          });
+          
+          if (reportStoresBody) {
+            reportStoresBody.innerHTML = "";
+            let alternate = false;
+            Object.keys(storeStats).sort().forEach(storeName => {
+              const stats = storeStats[storeName];
+              const tr = document.createElement("tr");
+              tr.style.background = alternate ? "#f8fafc" : "#ffffff";
+              alternate = !alternate;
+              
+              tr.innerHTML = `
+                <td style="padding: 8px; border: 1px solid #cbd5e1; font-weight:600; text-align:left;">${storeName}</td>
+                <td style="padding: 8px; border: 1px solid #cbd5e1; text-align:center; color:#16a34a; font-weight:600;">${stats.completed}</td>
+                <td style="padding: 8px; border: 1px solid #cbd5e1; text-align:center; color:#d97706;">${stats.pending}</td>
+                <td style="padding: 8px; border: 1px solid #cbd5e1; text-align:center; color:#4b5563;">${stats.not_interested}</td>
+                <td style="padding: 8px; border: 1px solid #cbd5e1; text-align:center; color:#dc2626; font-weight:600;">${stats.issues}</td>
+                <td style="padding: 8px; border: 1px solid #cbd5e1; text-align:center; font-weight:bold;">${stats.total}</td>
+              `;
+              reportStoresBody.appendChild(tr);
+            });
+          }
+        }
+      } catch (err) {
+        console.error("Generate printable report error:", err);
+      }
+    }
+
+    const printReportBtn = document.getElementById("printReportBtn");
+    if (printReportBtn) {
+      printReportBtn.addEventListener("click", () => {
+        window.print();
+      });
+    }
+
     // Escape key to close modals
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape") {
         if (dmModalOverlay && dmModalOverlay.style.display !== 'none') closeDmModal();
         if (editModalOverlay && editModalOverlay.style.display !== 'none') closeEditModal();
         if (deleteModalOverlay && deleteModalOverlay.style.display !== 'none') closeDeleteModal();
+        if (userModalOverlay && userModalOverlay.style.display !== 'none') closeUserModal();
+        if (userDeleteModalOverlay && userDeleteModalOverlay.style.display !== 'none') closeUserDeleteModal();
       }
     });
 
     // Initialize fetches sequence
     (async () => {
       await loadStores();
-      await fetchCustomersList();
       await fetchDashboardStats();
+      await fetchCustomersList();
       await fetchAdvancedStats(new URLSearchParams());
     })();
   }
