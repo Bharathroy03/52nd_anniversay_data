@@ -98,15 +98,9 @@
       <!-- Top Navbar -->
       <header class="top-navbar">
         <button class="mobile-toggle" id="sidebarToggle">☰</button>
-        <div class="navbar-brand-wrapper">
-          {% if logos.primary %}
-          <img src="/static/images/{{ logos.primary }}" class="mobile-navbar-logo" alt="Logo">
-          {% endif %}
-          <div style="display: flex; flex-direction: column;">
-            <div class="navbar-title desktop-title">Team Saddam Zone Activities Data Collection</div>
-            <div class="navbar-title mobile-title">Saddam Zone Activities</div>
-            <div id="userRoleGreeting" style="font-size: 0.82rem; color: var(--text-muted); font-weight: 500; margin-top: 2px;">Logged in as: {{ session.get('full_name', 'Loading...') }}</div>
-          </div>
+        <div style="display: flex; flex-direction: column;">
+          <div class="navbar-title">Team Saddam Zone Activities Data Collection</div>
+          <div id="userRoleGreeting" style="font-size: 0.82rem; color: var(--text-muted); font-weight: 500; margin-top: 2px;">Logged in as: Loading...</div>
         </div>
         <div class="navbar-actions">
           <button id="exportExcelBtn" class="btn btn-excel">
@@ -257,11 +251,15 @@
 
       <!-- Store-Wise Summary Grid -->
       <section class="card" id="stores-section" style="margin-bottom: 24px; padding: 20px;">
-        <div class="table-section-title">
-          <span>🏪 Store-Wise Analytical Summary</span>
+        <div class="table-section-title" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+          <span>🏪 Store-Wise Summary</span>
+          <div class="view-toggle-buttons">
+            <button type="button" id="btnStoreSimpleView" class="view-toggle-btn active">Simple View</button>
+            <button type="button" id="btnStoreFullView" class="view-toggle-btn">Full Analytical View</button>
+          </div>
         </div>
         <div class="table-container">
-          <table class="data-table" id="storeSummaryTable">
+          <table class="data-table simple-view" id="storeSummaryTable">
             <thead>
               <tr>
                 <th>Store Name</th>
@@ -561,6 +559,37 @@
 
       <!-- Custom System Styles for Printable Reports -->
       <style>
+        /* Store summary view toggle */
+        #storeSummaryTable.simple-view th:nth-child(n+3),
+        #storeSummaryTable.simple-view td:nth-child(n+3) {
+          display: none;
+        }
+        .view-toggle-buttons {
+          display: flex;
+          background: rgba(255, 255, 255, 0.05);
+          padding: 3px;
+          border-radius: var(--radius-sm);
+          border: 1px solid var(--surface-border);
+        }
+        .view-toggle-btn {
+          background: transparent;
+          border: none;
+          color: var(--text-muted);
+          padding: 4px 12px;
+          font-size: 0.78rem;
+          font-weight: 500;
+          cursor: pointer;
+          border-radius: 4px;
+          transition: all 0.2s ease;
+        }
+        .view-toggle-btn:hover {
+          color: var(--text-main);
+        }
+        .view-toggle-btn.active {
+          background: var(--primary);
+          color: white;
+        }
+
         @media print {
           body * {
             visibility: hidden;

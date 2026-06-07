@@ -369,7 +369,7 @@ document.addEventListener("DOMContentLoaded", () => {
           const roleText = role === 'super_admin' ? 'Super Admin' : 'Admin & Store Head';
           const userRoleGreeting = document.getElementById("userRoleGreeting");
           if (userRoleGreeting) {
-            userRoleGreeting.textContent = `Logged in as: ${result.user.name}`;
+            userRoleGreeting.textContent = `Logged in as: ${roleText}`;
           }
           
           const settingsLink = document.getElementById("nav-settings");
@@ -505,13 +505,13 @@ document.addEventListener("DOMContentLoaded", () => {
       sorted.forEach(stats => {
         const tr = document.createElement("tr");
         tr.innerHTML = `
-          <td data-label="Store Name"><strong>${stats.store_name}</strong></td>
-          <td data-label="Total Customers" style="text-align: center; font-weight: 600;">${stats.total_customers}</td>
-          <td data-label="Today's Customers" style="text-align: center; color: var(--accent); font-weight: 600;">${stats.todays_customers}</td>
-          <td data-label="Completed" style="text-align: center; color: var(--color-success); font-weight: 600;">${stats.completed}</td>
-          <td data-label="Pending" style="text-align: center; color: var(--color-warning); font-weight: 600;">${stats.pending}</td>
-          <td data-label="Not Interested" style="text-align: center; color: var(--text-muted);">${stats.not_interested}</td>
-          <td data-label="Invitation Issues" style="text-align: center; color: var(--color-danger); font-weight: 600;">${stats.invitation_issues}</td>
+          <td><strong>${stats.store_name}</strong></td>
+          <td style="text-align: center; font-weight: 600;">${stats.total_customers}</td>
+          <td style="text-align: center; color: var(--accent); font-weight: 600;">${stats.todays_customers}</td>
+          <td style="text-align: center; color: var(--color-success); font-weight: 600;">${stats.completed}</td>
+          <td style="text-align: center; color: var(--color-warning); font-weight: 600;">${stats.pending}</td>
+          <td style="text-align: center; color: var(--text-muted);">${stats.not_interested}</td>
+          <td style="text-align: center; color: var(--color-danger); font-weight: 600;">${stats.invitation_issues}</td>
         `;
         storeSummaryBody.appendChild(tr);
       });
@@ -719,26 +719,26 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (currentUserRole === 'admin_store_head') {
           tr.innerHTML = `
-            <td data-label="Submission ID">${sub.id}</td>
-            <td data-label="Submitted Date" style="white-space: nowrap;">${dateStr}</td>
-            <td data-label="Store Name"><strong>${sub.store_name}</strong></td>
-            <td data-label="Customer Name" class="td-name">${sub.customer_name}</td>
-            <td data-label="Mobile Number">${sub.mobile_number}</td>
-            <td data-label="App Status"><span class="badge ${regBadgeClass}">${sub.app_registration_status}</span></td>
-            <td data-label="Invitation Issue"><span class="badge ${issueBadgeClass}">${sub.invitation_issue}</span></td>
-            <td data-label="Issue Description" class="td-desc" title="${sub.issue_description || 'No Issue'}">${sub.issue_description || '<span style="color:#9ca3af;">No Issue</span>'}</td>
+            <td>${sub.id}</td>
+            <td style="white-space: nowrap;">${dateStr}</td>
+            <td><strong>${sub.store_name}</strong></td>
+            <td class="td-name">${sub.customer_name}</td>
+            <td>${sub.mobile_number}</td>
+            <td><span class="badge ${regBadgeClass}">${sub.app_registration_status}</span></td>
+            <td><span class="badge ${issueBadgeClass}">${sub.invitation_issue}</span></td>
+            <td class="td-desc" title="${sub.issue_description || 'No Issue'}">${sub.issue_description || '<span style="color:#9ca3af;">No Issue</span>'}</td>
           `;
         } else {
           tr.innerHTML = `
-            <td data-label="Submission ID">${sub.id}</td>
-            <td data-label="Submitted Date" style="white-space: nowrap;">${dateStr}</td>
-            <td data-label="Store Name"><strong>${sub.store_name}</strong></td>
-            <td data-label="Customer Name" class="td-name">${sub.customer_name}</td>
-            <td data-label="Mobile Number">${sub.mobile_number}</td>
-            <td data-label="App Status"><span class="badge ${regBadgeClass}">${sub.app_registration_status}</span></td>
-            <td data-label="Invitation Issue"><span class="badge ${issueBadgeClass}">${sub.invitation_issue}</span></td>
-            <td data-label="Issue Description" class="td-desc" title="${sub.issue_description || 'No Issue'}">${sub.issue_description || '<span style="color:#9ca3af;">No Issue</span>'}</td>
-            <td data-label="Actions" class="action-cell">
+            <td>${sub.id}</td>
+            <td style="white-space: nowrap;">${dateStr}</td>
+            <td><strong>${sub.store_name}</strong></td>
+            <td class="td-name">${sub.customer_name}</td>
+            <td>${sub.mobile_number}</td>
+            <td><span class="badge ${regBadgeClass}">${sub.app_registration_status}</span></td>
+            <td><span class="badge ${issueBadgeClass}">${sub.invitation_issue}</span></td>
+            <td class="td-desc" title="${sub.issue_description || 'No Issue'}">${sub.issue_description || '<span style="color:#9ca3af;">No Issue</span>'}</td>
+            <td class="action-cell">
               <button class="action-btn action-btn-edit" title="Edit" data-id="${sub.id}">✏️</button>
               <button class="action-btn action-btn-delete" title="Delete" data-id="${sub.id}">🗑️</button>
             </td>
@@ -2144,6 +2144,25 @@ document.addEventListener("DOMContentLoaded", () => {
         if (userDeleteModalOverlay && userDeleteModalOverlay.style.display !== 'none') closeUserDeleteModal();
       }
     });
+
+    // Store Wise Summary Table View Toggle
+    const btnSimple = document.getElementById("btnStoreSimpleView");
+    const btnFull = document.getElementById("btnStoreFullView");
+    const storeTable = document.getElementById("storeSummaryTable");
+    
+    if (btnSimple && btnFull && storeTable) {
+      btnSimple.addEventListener("click", () => {
+        btnSimple.classList.add("active");
+        btnFull.classList.remove("active");
+        storeTable.classList.add("simple-view");
+      });
+      
+      btnFull.addEventListener("click", () => {
+        btnFull.classList.add("active");
+        btnSimple.classList.remove("active");
+        storeTable.classList.remove("simple-view");
+      });
+    }
 
     // Initialize fetches sequence
     (async () => {
