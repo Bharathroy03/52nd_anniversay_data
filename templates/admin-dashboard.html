@@ -100,7 +100,7 @@
         <button class="mobile-toggle" id="sidebarToggle">☰</button>
         <div style="display: flex; flex-direction: column;">
           <div class="navbar-title">Team Saddam Zone Activities Data Collection</div>
-          <div id="userRoleGreeting" style="font-size: 0.82rem; color: var(--text-muted); font-weight: 500; margin-top: 2px;">Logged in as: Loading...</div>
+          <div id="userRoleGreeting" style="font-size: 0.82rem; color: var(--text-muted); font-weight: 500; margin-top: 2px;">Logged in as: {{ session.get('full_name', 'Loading...') }}</div>
         </div>
         <div class="navbar-actions">
           <button id="exportExcelBtn" class="btn btn-excel">

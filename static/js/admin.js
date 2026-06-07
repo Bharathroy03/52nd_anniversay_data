@@ -369,7 +369,7 @@ document.addEventListener("DOMContentLoaded", () => {
           const roleText = role === 'super_admin' ? 'Super Admin' : 'Admin & Store Head';
           const userRoleGreeting = document.getElementById("userRoleGreeting");
           if (userRoleGreeting) {
-            userRoleGreeting.textContent = `Logged in as: ${roleText}`;
+            userRoleGreeting.textContent = `Logged in as: ${result.user.name}`;
           }
           
           const settingsLink = document.getElementById("nav-settings");
