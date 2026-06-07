@@ -2154,21 +2154,512 @@ body {
   }
 }
 
+/* ==================================================== */
+/* Mobile Responsive Styling                            */
+/* ==================================================== */
+
 @media (max-width: 768px) {
-  .analytics-highlight-grid {
-    grid-template-columns: 1fr !important;
+  /* General Layout Fixes */
+  body, html {
+    overflow-x: hidden;
+    width: 100%;
   }
-  .edit-modal-card {
-    width: 95%;
+
+  .app-container {
+    margin: 15px auto;
+    padding: 0 12px;
     max-width: 100%;
   }
+
+  .card {
+    padding: 16px;
+    margin-bottom: 16px;
+    border-radius: var(--radius-sm);
+  }
+
+  /* Public Form Header */
+  .logo-header {
+    flex-direction: row;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding: 5px 0;
+  }
+
+  .logo-anniversary {
+    max-height: 48px !important;
+  }
+
+  .logo-primary {
+    max-height: 32px !important;
+  }
+
+  .form-title-card h1 {
+    font-size: 1.25rem !important;
+    text-align: center;
+  }
+
+  .form-description {
+    font-size: 0.85rem !important;
+    text-align: center;
+    line-height: 1.4;
+  }
+
+  .required-notice {
+    text-align: center;
+    margin-top: 6px;
+  }
+
+  /* Form Select triggers and elements */
+  .custom-select-trigger {
+    padding: 12px !important;
+    font-size: 0.92rem !important;
+  }
+
+  .form-control {
+    padding: 11px 12px !important;
+    font-size: 0.92rem !important;
+  }
+
+  .flex-between {
+    flex-direction: column-reverse;
+    gap: 12px;
+    margin-bottom: 24px !important;
+  }
+
+  .flex-between .btn {
+    width: 100% !important;
+    padding: 13px !important;
+  }
+
+  /* Modals Full-Screen Redesign for Public Selectors */
+  .public-form-body .store-modal-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+    display: flex;
+    flex-direction: column;
+    padding: 20px 16px !important;
+  }
+
+  .public-form-body .store-options-list {
+    max-height: calc(100vh - 160px) !important;
+    flex: 1;
+    margin-right: 0;
+    padding-right: 0;
+  }
+
+  .public-form-body .modal-card h2 {
+    font-size: 1.25rem !important;
+  }
+
+  /* Success Confirmation Modal */
+  .modal-card {
+    width: 92% !important;
+    padding: 28px 20px !important;
+  }
+
+  /* Sticky Footer Alignment */
+  .site-footer {
+    position: relative !important;
+    margin-top: 30px !important;
+    padding: 16px !important;
+    background: transparent !important;
+    border-top: 1px solid var(--surface-border) !important;
+    text-align: center !important;
+    z-index: 10 !important;
+  }
+  
+  .site-footer-text {
+    font-size: 0.72rem !important;
+    color: var(--text-muted) !important;
+  }
+
+  /* Admin Login Page Mobile View */
+  .login-wrapper {
+    max-width: 92%;
+    padding: 10px;
+    margin: 0 auto;
+  }
+
+  .login-card {
+    padding: 28px 20px !important;
+    border-radius: var(--radius-sm) !important;
+  }
+
+  .login-card h1 {
+    font-size: 1.4rem !important;
+  }
+
+  .login-card .form-control {
+    padding: 12px !important;
+  }
+
+  .login-card #loginBtn {
+    width: 100% !important;
+  }
+
+  .login-body .site-footer {
+    position: relative !important;
+    margin-top: 24px !important;
+    border-top: none !important;
+    color: #9ca3af !important;
+  }
+
+  /* Admin Dashboard Mobile View - Sidebar Hamburger Drawer */
+  .sidebar {
+    transform: translateX(-100%);
+    width: 250px !important;
+    box-shadow: 10px 0 30px rgba(0, 0, 0, 0.25);
+    left: 0;
+  }
+
+  .sidebar.active {
+    transform: translateX(0);
+  }
+
+  .main-content {
+    margin-left: 0 !important;
+    padding: 12px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* Top Navbar Drawer controls */
+  .top-navbar {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+    padding: 12px 16px !important;
+    margin-bottom: 16px !important;
+    border-radius: var(--radius-sm) !important;
+  }
+
+  .navbar-brand-wrapper {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    width: 100%;
+  }
+
+  .mobile-navbar-logo {
+    display: block !important;
+    max-height: 28px;
+    width: auto;
+    object-fit: contain;
+  }
+
+  .desktop-title {
+    display: none !important;
+  }
+
+  .mobile-title {
+    display: block !important;
+    font-size: 0.95rem !important;
+    font-weight: 700 !important;
+    color: #ffffff !important;
+    line-height: 1.2;
+  }
+
+  #userRoleGreeting {
+    font-size: 0.75rem !important;
+    margin-top: 2px !important;
+  }
+
+  .mobile-toggle {
+    display: block !important;
+    margin-right: 6px;
+  }
+
+  .navbar-actions {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+    width: 100% !important;
+    margin-top: 8px !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+    padding-top: 12px !important;
+  }
+
+  .navbar-actions .btn {
+    width: 100% !important;
+    justify-content: center !important;
+    padding: 10px !important;
+    font-size: 0.85rem !important;
+  }
+
+  /* Stats summary counters */
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
+    margin-bottom: 16px !important;
+  }
+
+  .stat-card {
+    padding: 14px 12px !important;
+    border-radius: var(--radius-sm) !important;
+  }
+
+  .stat-title {
+    font-size: 0.7rem !important;
+  }
+
+  .stat-value {
+    font-size: 1.45rem !important;
+  }
+
+  .analytics-highlight-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    margin-bottom: 16px !important;
+  }
+
+  /* Filter sections controls */
+  .filter-card {
+    padding: 16px !important;
+    margin-bottom: 16px !important;
+  }
+
+  .filter-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  .filter-card button, .filter-card .btn {
+    width: 100% !important;
+  }
+
+  #analytics-filter-section .filter-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Table-to-Card conversion: Store Summary Table */
+  #storeSummaryTable thead {
+    display: none !important;
+  }
+
+  #storeSummaryTable, #storeSummaryTable tbody, #storeSummaryTable tr, #storeSummaryTable td {
+    display: block !important;
+    width: 100% !important;
+  }
+
+  #storeSummaryTable tr {
+    background: #ffffff !important;
+    border: 1px solid var(--surface-border) !important;
+    border-radius: var(--radius-sm) !important;
+    padding: 14px !important;
+    margin-bottom: 14px !important;
+    box-shadow: var(--shadow-sm) !important;
+  }
+
+  #storeSummaryTable td {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 8px 0 !important;
+    border-bottom: 1px dashed #f1f5f9 !important;
+    font-size: 0.88rem !important;
+    text-align: left !important;
+  }
+
+  #storeSummaryTable td:last-child {
+    border-bottom: none !important;
+  }
+
+  #storeSummaryTable td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+  }
+
+  #storeSummaryTable td[data-label="Store Name"] {
+    order: 1;
+    font-size: 0.98rem;
+    font-weight: 700;
+    border-bottom: 2px solid #e2e8f0 !important;
+    padding-bottom: 10px !important;
+    margin-bottom: 6px !important;
+    color: var(--primary) !important;
+  }
+  #storeSummaryTable td[data-label="Total Submissions"] { order: 2; }
+  #storeSummaryTable td[data-label="Today's Customers"] { order: 3; }
+  #storeSummaryTable td[data-label="Completed"] { order: 4; }
+  #storeSummaryTable td[data-label="Pending"] { order: 5; }
+  #storeSummaryTable td[data-label="Not Interested"] { order: 6; }
+  #storeSummaryTable td[data-label="Issues"] { order: 7; }
+
+  /* Table-to-Card conversion: Customer Activity Logs Table */
+  #submissionsTable thead {
+    display: none !important;
+  }
+
+  #submissionsTable, #submissionsTable tbody, #submissionsTable tr, #submissionsTable td {
+    display: block !important;
+    width: 100% !important;
+  }
+
+  #submissionsTable tr {
+    background: #ffffff !important;
+    border: 1px solid var(--surface-border) !important;
+    border-radius: var(--radius-sm) !important;
+    padding: 14px !important;
+    margin-bottom: 14px !important;
+    box-shadow: var(--shadow-sm) !important;
+  }
+
+  #submissionsTable td {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 8px 0 !important;
+    border-bottom: 1px dashed #f1f5f9 !important;
+    font-size: 0.88rem !important;
+    text-align: left !important;
+  }
+
+  #submissionsTable td:last-child {
+    border-bottom: none !important;
+  }
+
+  #submissionsTable td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+  }
+
+  #submissionsTable td[data-label="Store Name"] {
+    order: 1;
+    font-size: 0.98rem;
+    font-weight: 700;
+    border-bottom: 2px solid #e2e8f0 !important;
+    padding-bottom: 10px !important;
+    margin-bottom: 6px !important;
+    color: var(--primary) !important;
+  }
+  #submissionsTable td[data-label="Customer Name"] {
+    order: 2;
+    font-weight: 600;
+  }
+  #submissionsTable td[data-label="Mobile Number"] { order: 3; }
+  #submissionsTable td[data-label="App Status"] { order: 4; }
+  #submissionsTable td[data-label="Invitation Issue"] { order: 5; }
+  #submissionsTable td[data-label="Issue Description"] {
+    order: 6;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 4px !important;
+  }
+  #submissionsTable td[data-label="Issue Description"]::before {
+    margin-bottom: 2px;
+  }
+  #submissionsTable td[data-label="Issue Description"] .td-desc {
+    white-space: normal !important;
+    word-break: break-word !important;
+    max-width: 100% !important;
+  }
+  #submissionsTable td[data-label="Submitted Date"] {
+    order: 7;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+  }
+  #submissionsTable td[data-label="Submission ID"] {
+    order: 8;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+  }
+  #submissionsTable td[data-label="Actions"] {
+    order: 9;
+    justify-content: flex-end !important;
+    padding-top: 10px !important;
+    border-top: 1px solid #e2e8f0 !important;
+    margin-top: 6px !important;
+    border-bottom: none !important;
+  }
+
+  /* Table Container Scrolling fallback (for printing/other tables) */
+  .table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Modals on Mobile */
+  .edit-modal-card {
+    width: 94% !important;
+    max-height: 90vh !important;
+    border-radius: var(--radius-sm) !important;
+  }
+
+  .edit-modal-body {
+    padding: 16px 20px !important;
+  }
+
+  .edit-modal-actions {
+    flex-direction: column-reverse;
+    gap: 10px;
+  }
+
+  .edit-modal-actions .btn {
+    width: 100% !important;
+  }
+
+  /* Charts height adjustments */
+  .chart-wrapper {
+    height: 260px !important;
+  }
+
+  .chart-card {
+    padding: 12px !important;
+  }
+
   .toast {
-    max-width: 300px;
+    max-width: 320px;
     right: 12px;
   }
+
   .toast-container {
     right: 12px;
     top: 12px;
   }
 }
+
+@media (max-width: 480px) {
+  /* Small Mobile Layout */
+  .logo-header {
+    gap: 8px;
+  }
+
+  .logo-anniversary {
+    max-height: 42px !important;
+  }
+
+  .logo-primary {
+    max-height: 28px !important;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  .analytics-highlight-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .top-navbar {
+    padding: 10px 12px !important;
+  }
+
+  .mobile-title {
+    font-size: 0.88rem !important;
+  }
+
+  .sidebar {
+    width: 230px !important;
+  }
+}
+
 

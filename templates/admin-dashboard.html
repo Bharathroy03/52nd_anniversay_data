@@ -98,9 +98,15 @@
       <!-- Top Navbar -->
       <header class="top-navbar">
         <button class="mobile-toggle" id="sidebarToggle">☰</button>
-        <div style="display: flex; flex-direction: column;">
-          <div class="navbar-title">Team Saddam Zone Activities Data Collection</div>
-          <div id="userRoleGreeting" style="font-size: 0.82rem; color: var(--text-muted); font-weight: 500; margin-top: 2px;">Logged in as: {{ session.get('full_name', 'Loading...') }}</div>
+        <div class="navbar-brand-wrapper">
+          {% if logos.primary %}
+          <img src="/static/images/{{ logos.primary }}" class="mobile-navbar-logo" alt="Logo">
+          {% endif %}
+          <div style="display: flex; flex-direction: column;">
+            <div class="navbar-title desktop-title">Team Saddam Zone Activities Data Collection</div>
+            <div class="navbar-title mobile-title">Saddam Zone Activities</div>
+            <div id="userRoleGreeting" style="font-size: 0.82rem; color: var(--text-muted); font-weight: 500; margin-top: 2px;">Logged in as: {{ session.get('full_name', 'Loading...') }}</div>
+          </div>
         </div>
         <div class="navbar-actions">
           <button id="exportExcelBtn" class="btn btn-excel">
