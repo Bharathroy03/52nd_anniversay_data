@@ -597,20 +597,16 @@
 
         /* Top Section Layout (Metrics Left, Store Summary Right) */
         .dashboard-top-layout {
-          display: grid;
-          grid-template-columns: 1.8fr 1.2fr;
+          display: flex;
+          flex-direction: column;
           gap: 20px;
           margin-bottom: 24px;
-          align-items: start;
         }
         .dashboard-top-layout .stats-grid {
           grid-template-columns: repeat(2, 1fr);
           margin-bottom: 0;
         }
         @media (max-width: 1200px) {
-          .dashboard-top-layout {
-            grid-template-columns: 1fr;
-          }
           .dashboard-top-layout .stats-grid {
             grid-template-columns: repeat(2, 1fr);
           }
