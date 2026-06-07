@@ -185,6 +185,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let pageSize = parseInt(pageSizeSelect.value, 10);
     let searchTimeout = null;
     let currentUserRole = '';
+    let currentUserFullName = '';
     
     // Chart.js references
     let storeChartInstance = null;
@@ -366,6 +367,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (result.success && result.user) {
           const role = result.user.role;
           currentUserRole = role;
+          currentUserFullName = result.user.name || '';
           const roleText = role === 'super_admin' ? 'Super Admin' : 'Admin & Store Head';
           const userRoleGreeting = document.getElementById("userRoleGreeting");
           if (userRoleGreeting) {
@@ -501,8 +503,22 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
       
+      let sumTotal = 0;
+      let sumToday = 0;
+      let sumCompleted = 0;
+      let sumPending = 0;
+      let sumNotInterested = 0;
+      let sumIssues = 0;
+
       const sorted = [...storeWiseData].sort((a, b) => a.store_name.localeCompare(b.store_name));
       sorted.forEach(stats => {
+        sumTotal += stats.total_customers || 0;
+        sumToday += stats.todays_customers || 0;
+        sumCompleted += stats.completed || 0;
+        sumPending += stats.pending || 0;
+        sumNotInterested += stats.not_interested || 0;
+        sumIssues += stats.invitation_issues || 0;
+
         const tr = document.createElement("tr");
         tr.innerHTML = `
           <td><strong>${stats.store_name}</strong></td>
@@ -515,6 +531,26 @@ document.addEventListener("DOMContentLoaded", () => {
         `;
         storeSummaryBody.appendChild(tr);
       });
+
+      // Append Grand Total row
+      const totalTr = document.createElement("tr");
+      totalTr.style.background = "rgba(37, 99, 235, 0.05)";
+      totalTr.style.borderTop = "2px solid var(--primary)";
+      
+      const totalLabel = currentUserRole === 'admin_store_head'
+        ? "Saddam Husain (6172) Total"
+        : (currentUserFullName ? `${currentUserFullName} Total` : "Saddam Husain (6172) Total");
+        
+      totalTr.innerHTML = `
+        <td><strong>${totalLabel}</strong></td>
+        <td style="text-align: center; font-weight: 700; color: var(--primary);">${sumTotal}</td>
+        <td style="text-align: center; font-weight: 700; color: var(--accent);">${sumToday}</td>
+        <td style="text-align: center; font-weight: 700; color: var(--color-success);">${sumCompleted}</td>
+        <td style="text-align: center; font-weight: 700; color: var(--color-warning);">${sumPending}</td>
+        <td style="text-align: center; font-weight: 700; color: var(--text-muted);">${sumNotInterested}</td>
+        <td style="text-align: center; font-weight: 700; color: var(--color-danger);">${sumIssues}</td>
+      `;
+      storeSummaryBody.appendChild(totalTr);
     }
 
     // Compile Store-Wise summary grid from entries (fallback for existing charts)
