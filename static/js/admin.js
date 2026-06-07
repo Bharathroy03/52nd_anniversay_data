@@ -537,9 +537,7 @@ document.addEventListener("DOMContentLoaded", () => {
       totalTr.style.background = "rgba(37, 99, 235, 0.05)";
       totalTr.style.borderTop = "2px solid var(--primary)";
       
-      const totalLabel = currentUserRole === 'admin_store_head'
-        ? "Saddam Husain (6172) Total"
-        : (currentUserFullName ? `${currentUserFullName} Total` : "Saddam Husain (6172) Total");
+      const totalLabel = "Saddam Husain (6172) - Total";
         
       totalTr.innerHTML = `
         <td><strong>${totalLabel}</strong></td>
