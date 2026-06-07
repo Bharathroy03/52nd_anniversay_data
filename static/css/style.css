@@ -2347,6 +2347,7 @@ body {
     padding: 12px 16px !important;
     margin-bottom: 16px !important;
     border-radius: var(--radius-sm) !important;
+    z-index: 10 !important; /* Prevent overlapping the side drawer menu on mobile viewports */
   }
 
   .navbar-brand-wrapper {
@@ -2733,6 +2734,11 @@ body {
     font-size: 0.8rem !important;
   }
   
+  /* Sidebar Drawer & Overlay Z-Index Overrides */
+  .sidebar {
+    z-index: 1010 !important;
+  }
+
   /* Sidebar Drawer Overlay */
   .sidebar-overlay {
     position: fixed;
@@ -2743,7 +2749,7 @@ body {
     background: rgba(0, 0, 0, 0.6);
     backdrop-filter: blur(4px);
     -webkit-backdrop-filter: blur(4px);
-    z-index: 99;
+    z-index: 1000 !important;
     display: none;
     opacity: 0;
     transition: opacity 0.3s ease;
