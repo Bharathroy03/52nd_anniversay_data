@@ -92,6 +92,57 @@ app.secret_key = Config.SECRET_KEY
 CORS(app)  # Support cross-origin API development
 
 # ----------------------------------------------------
+# Global Error Handling Middleware
+# ----------------------------------------------------
+@app.errorhandler(Exception)
+def handle_global_exception(e):
+    """
+    Global exception handler to catch any unhandled errors gracefully
+    and return appropriate responses instead of crashing or showing tracebacks.
+    """
+    from werkzeug.exceptions import HTTPException
+    
+    # Let standard Flask HTTP exceptions (like 404, 405) propagate
+    if isinstance(e, HTTPException):
+        return e
+        
+    # Log the full exception traceback
+    app.logger.error(f"Unhandled Exception: {e}", exc_info=True)
+    
+    # Return JSON for API routes
+    if request.path.startswith('/api/'):
+        return jsonify({
+            "success": False,
+            "message": "An unexpected server error occurred.",
+            "error": str(e)
+        }), 500
+        
+    # Return descriptive error page for web pages
+    return f"""
+    <html>
+        <head>
+            <title>Application Error</title>
+            <style>
+                body {{ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #0f172a; color: #f8fafc; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; padding: 20px; text-align: center; }}
+                .container {{ max-width: 500px; padding: 30px; background: #1e293b; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06); border: 1px solid #334155; }}
+                h1 {{ color: #ef4444; margin-top: 0; font-size: 1.5rem; }}
+                p {{ color: #94a3b8; font-size: 0.95rem; line-height: 1.5; }}
+                .btn {{ display: inline-block; margin-top: 20px; padding: 10px 20px; background: #3b82f6; color: white; text-decoration: none; border-radius: 6px; font-weight: 500; transition: background 0.2s; }}
+                .btn:hover {{ background: #2563eb; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h1>⚠️ Something went wrong</h1>
+                <p>An unexpected application error has occurred. If you are deploying this to Vercel, please make sure your database credentials (<b>SUPABASE_URL</b> and <b>SUPABASE_KEY</b>) are properly configured in Vercel Environment Variables.</p>
+                <a href="/" class="btn">Return to Home</a>
+            </div>
+        </body>
+    </html>
+    """, 500
+
+
+# ----------------------------------------------------
 # Dynamic Logo Detection Logic
 # ----------------------------------------------------
 def get_logo_images():
@@ -201,21 +252,34 @@ def log_delete_action(delete_type, records_deleted, details=''):
 @app.route('/')
 def route_index():
     """Serves the public customer feedback form."""
-    return render_template('index.html')
+    try:
+        return render_template('index.html')
+    except Exception as e:
+        app.logger.error(f"Index route failed: {e}")
+        raise e
 
 @app.route('/admin-login')
 def route_admin_login():
     """Serves the admin login. Redirects to dashboard if already logged in."""
-    if session.get('logged_in') and session.get('role') in ['super_admin', 'admin_store_head']:
-        return redirect('/admin-dashboard')
-    return render_template('admin-login.html')
+    try:
+        if session.get('logged_in') and session.get('role') in ['super_admin', 'admin_store_head']:
+            return redirect('/admin-dashboard')
+        return render_template('admin-login.html')
+    except Exception as e:
+        app.logger.error(f"Admin login route failed: {e}")
+        raise e
 
 @app.route('/admin-dashboard')
 def route_admin_dashboard():
     """Serves the admin dashboard. Enforces server-side login check."""
-    if not session.get('logged_in') or session.get('role') not in ['super_admin', 'admin_store_head']:
-        return redirect('/admin-login')
-    return render_template('admin-dashboard.html')
+    try:
+        if not session.get('logged_in') or session.get('role') not in ['super_admin', 'admin_store_head']:
+            return redirect('/admin-login')
+        return render_template('admin-dashboard.html')
+    except Exception as e:
+        app.logger.error(f"Admin dashboard route failed: {e}")
+        raise e
+
 
 # ----------------------------------------------------
 # Restructured REST API Endpoints
@@ -328,8 +392,13 @@ def api_admin_login():
 @app.route('/api/admin/logout', methods=['POST', 'GET'])
 def api_admin_logout():
     """Clears admin session parameters."""
-    session.clear()
-    return jsonify({"success": True, "message": "Successfully logged out."})
+    try:
+        session.clear()
+        return jsonify({"success": True, "message": "Successfully logged out."})
+    except Exception as e:
+        app.logger.error(f"Logout failed: {e}")
+        return jsonify({"success": False, "message": f"Logout failed: {str(e)}"}), 500
+
 
 @app.route('/api/admin/dashboard', methods=['GET'])
 @admin_required
@@ -399,9 +468,14 @@ def api_admin_dashboard():
 @admin_required
 def api_admin_settings():
     """Mockup route for system settings configuration to verify Role-Based Access Control."""
-    if session.get('role') != 'super_admin':
-        return jsonify({"success": False, "message": "Access Denied: Super Admin privileges required."}), 403
-    return jsonify({"success": True, "message": "Super Admin system configuration settings accessed successfully."})
+    try:
+        if session.get('role') != 'super_admin':
+            return jsonify({"success": False, "message": "Access Denied: Super Admin privileges required."}), 403
+        return jsonify({"success": True, "message": "Super Admin system configuration settings accessed successfully."})
+    except Exception as e:
+        app.logger.error(f"Settings config endpoint failed: {e}")
+        return jsonify({"success": False, "message": f"Settings access failed: {str(e)}"}), 500
+
 
 @app.route('/api/admin/customers', methods=['GET'])
 @admin_required
