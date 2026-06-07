@@ -2760,68 +2760,60 @@ body {
     opacity: 1 !important;
   }
 
-  /* Mobile Store Summary Card Grid */
-  .store-summary-cards-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 16px;
+  /* Mobile Store Summary Table Styling */
+  .mobile-table-wrapper {
     width: 100%;
-  }
-
-  .mobile-store-card {
-    background: var(--surface);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: var(--radius-sm);
     border: 1px solid var(--surface-border);
-    border-radius: var(--radius-md);
-    padding: 16px;
-    box-shadow: var(--shadow-sm);
-    transition: transform 0.2s ease;
-  }
-  
-  .mobile-store-card.total-card {
-    border-left: 4px solid var(--primary);
+    background: #ffffff;
   }
 
-  .mobile-card-header {
-    font-size: 1rem;
+  .mobile-store-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.76rem;
+  }
+
+  .mobile-store-table th {
+    background-color: #f8fafc;
+    padding: 10px 8px;
+    border-bottom: 2px solid var(--surface-border);
     font-weight: 700;
-    color: var(--text-main);
-    border-bottom: 1.5px solid var(--surface-border);
-    padding-bottom: 10px;
-    margin-bottom: 12px;
-  }
-
-  .mobile-card-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-  }
-
-  .mobile-grid-item {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-
-  .item-label {
-    font-size: 0.72rem;
     color: var(--text-muted);
-    font-weight: 500;
+    font-size: 0.7rem;
     text-transform: uppercase;
-    letter-spacing: 0.2px;
+    white-space: nowrap;
+    letter-spacing: 0.3px;
   }
 
-  .item-value {
-    font-size: 1.05rem;
+  .mobile-store-table td {
+    padding: 10px 8px;
+    border-bottom: 1px solid var(--surface-border);
     color: var(--text-main);
+    line-height: 1.35;
+    vertical-align: middle;
   }
 
-  /* Support Simple View on Store Summary Cards */
-  .store-summary-cards-grid.simple-view .mobile-store-card .mobile-grid-item:nth-child(n+2) {
+  .mobile-store-table tr:last-child td {
+    border-bottom: none;
+  }
+
+  .mobile-store-total-row {
+    background-color: #f8fafc;
+    font-weight: bold;
+  }
+
+  .mobile-store-total-row td {
+    border-top: 2px solid var(--primary);
+    color: var(--text-main) !important;
+  }
+
+  /* Support Simple View on Store Summary Table (Hides columns 3 to 7) */
+  .store-summary-cards-grid.simple-view .mobile-store-table th:nth-child(n+3),
+  .store-summary-cards-grid.simple-view .mobile-store-table td:nth-child(n+3) {
     display: none !important;
-  }
-
-  .store-summary-cards-grid.simple-view .mobile-store-card .mobile-card-grid {
-    grid-template-columns: 1fr !important;
   }
 
   /* Mobile Customer Cards Grid */

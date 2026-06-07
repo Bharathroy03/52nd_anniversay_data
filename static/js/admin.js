@@ -551,86 +551,60 @@ document.addEventListener("DOMContentLoaded", () => {
       `;
       storeSummaryBody.appendChild(totalTr);
 
-      // Populate mobile store summary cards
+      // Populate mobile store summary table
       const storeCards = document.getElementById("storeSummaryCards");
       if (storeCards) {
         storeCards.innerHTML = "";
         if (storeWiseData.length === 0) {
           storeCards.innerHTML = `<div class="table-empty"><div class="icon">📭</div><div>No store data available.</div></div>`;
         } else {
+          // Render a clean, modern responsive table for mobile
+          let tableHtml = `
+            <div class="mobile-table-wrapper">
+              <table class="mobile-store-table">
+                <thead>
+                  <tr>
+                    <th style="text-align: left;">Store Name</th>
+                    <th style="text-align: center;">Submissions</th>
+                    <th style="text-align: center;">Today</th>
+                    <th style="text-align: center;">Done</th>
+                    <th style="text-align: center;">Pending</th>
+                    <th style="text-align: center;">No Int</th>
+                    <th style="text-align: center;">Issues</th>
+                  </tr>
+                </thead>
+                <tbody>
+          `;
+          
           sorted.forEach(stats => {
-            const card = document.createElement("div");
-            card.className = "mobile-store-card";
-            card.innerHTML = `
-              <div class="mobile-card-header">
-                <strong>🏪 ${stats.store_name}</strong>
-              </div>
-              <div class="mobile-card-grid">
-                <div class="mobile-grid-item">
-                  <span class="item-label">Total Customers</span>
-                  <span class="item-value font-bold">${stats.total_customers}</span>
-                </div>
-                <div class="mobile-grid-item">
-                  <span class="item-label">Today's Customers</span>
-                  <span class="item-value text-accent font-bold">${stats.todays_customers}</span>
-                </div>
-                <div class="mobile-grid-item">
-                  <span class="item-label">Completed</span>
-                  <span class="item-value text-success font-bold">${stats.completed}</span>
-                </div>
-                <div class="mobile-grid-item">
-                  <span class="item-label">Pending</span>
-                  <span class="item-value text-warning font-bold">${stats.pending}</span>
-                </div>
-                <div class="mobile-grid-item">
-                  <span class="item-label">Not Interested</span>
-                  <span class="item-value text-muted">${stats.not_interested}</span>
-                </div>
-                <div class="mobile-grid-item">
-                  <span class="item-label">Issues</span>
-                  <span class="item-value text-danger font-bold">${stats.invitation_issues}</span>
-                </div>
-              </div>
+            tableHtml += `
+              <tr>
+                <td style="text-align: left;"><strong>${stats.store_name}</strong></td>
+                <td style="text-align: center; font-weight: 700; color: var(--primary);">${stats.total_customers}</td>
+                <td style="text-align: center; font-weight: 700; color: var(--accent);">${stats.todays_customers}</td>
+                <td style="text-align: center; font-weight: 700; color: var(--color-success);">${stats.completed}</td>
+                <td style="text-align: center; font-weight: 700; color: var(--color-warning);">${stats.pending}</td>
+                <td style="text-align: center; color: var(--text-muted);">${stats.not_interested}</td>
+                <td style="text-align: center; font-weight: 700; color: var(--color-danger);">${stats.invitation_issues}</td>
+              </tr>
             `;
-            storeCards.appendChild(card);
           });
           
-          // Append Grand Total Card
-          const totalCard = document.createElement("div");
-          totalCard.className = "mobile-store-card total-card";
-          totalCard.style.borderLeft = "4px solid var(--primary)";
-          totalCard.innerHTML = `
-            <div class="mobile-card-header">
-              <strong>⭐ ${totalLabel}</strong>
-            </div>
-            <div class="mobile-card-grid">
-              <div class="mobile-grid-item">
-                <span class="item-label">Total Customers</span>
-                <span class="item-value text-primary font-bold">${sumTotal}</span>
-              </div>
-              <div class="mobile-grid-item">
-                <span class="item-label">Today's Customers</span>
-                <span class="item-value text-accent font-bold">${sumToday}</span>
-              </div>
-              <div class="mobile-grid-item">
-                <span class="item-label">Completed</span>
-                <span class="item-value text-success font-bold">${sumCompleted}</span>
-              </div>
-              <div class="mobile-grid-item">
-                <span class="item-label">Pending</span>
-                <span class="item-value text-warning font-bold">${sumPending}</span>
-              </div>
-              <div class="mobile-grid-item">
-                <span class="item-label">Not Interested</span>
-                <span class="item-value text-muted font-bold">${sumNotInterested}</span>
-              </div>
-              <div class="mobile-grid-item">
-                <span class="item-label">Issues</span>
-                <span class="item-value text-danger font-bold">${sumIssues}</span>
-              </div>
+          tableHtml += `
+                  <tr class="mobile-store-total-row">
+                    <td style="text-align: left;"><strong>${totalLabel}</strong></td>
+                    <td style="text-align: center; font-weight: 700; color: var(--primary);">${sumTotal}</td>
+                    <td style="text-align: center; font-weight: 700; color: var(--accent);">${sumToday}</td>
+                    <td style="text-align: center; font-weight: 700; color: var(--color-success);">${sumCompleted}</td>
+                    <td style="text-align: center; font-weight: 700; color: var(--color-warning);">${sumPending}</td>
+                    <td style="text-align: center; font-weight: 700; color: var(--text-muted);">${sumNotInterested}</td>
+                    <td style="text-align: center; font-weight: 700; color: var(--color-danger);">${sumIssues}</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           `;
-          storeCards.appendChild(totalCard);
+          storeCards.innerHTML = tableHtml;
         }
       }
     }
