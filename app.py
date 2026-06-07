@@ -1103,7 +1103,7 @@ def api_delete_all_customers_legacy():
 
 
 @app.route('/api/admin/export', methods=['GET'])
-@super_admin_required
+@admin_required
 def api_admin_export():
     """Generates and streams a CSV of filtered customer entries."""
         
@@ -1180,7 +1180,7 @@ def api_admin_export():
         return "Internal server error generating CSV export.", 500
 
 @app.route('/api/admin/export-excel', methods=['GET'])
-@super_admin_required
+@admin_required
 def api_admin_export_excel():
     """Generates and streams an Excel workbook with multiple worksheets and premium formatting."""
         
